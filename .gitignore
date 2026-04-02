@@ -1,0 +1,43 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Build outputs
+dist
+.build
+.turbo
+*.tsbuildinfo
+
+# Test outputs
+coverage
+*.test-output.*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Cache
+.cache
+*.tsbuildinfo
+.rpt2_cache
+.parcel-cache
+
+# pnpm
+!.pnpmfile.cjs
+.pnpm-debug.log

@@ -1,0 +1,43 @@
+{
+  "name": "@freed/cli",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "freed": "./dist/bin.js"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsx src/bin.ts",
+    "start": "node dist/bin.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@freed/models": "workspace:*",
+    "@freed/runtime": "workspace:*",
+    "@freed/shared": "workspace:*",
+    "@freed/skills": "workspace:*",
+    "@freed/storage": "workspace:*",
+    "@freed/tools": "workspace:*",
+    "chalk": "^5.4.1",
+    "commander": "^12.1.0",
+    "dotenv": "^17.3.1",
+    "ink": "^5.1.0",
+    "ink-spinner": "^5.0.0",
+    "ink-text-input": "^6.0.0",
+    "marked": "^15.0.0",
+    "marked-terminal": "^7.1.0",
+    "react": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/marked-terminal": "^6.1.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.0",
+    "tsup": "^8.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}

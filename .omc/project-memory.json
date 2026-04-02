@@ -1,0 +1,140 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1775132824082,
+  "projectRoot": "/Users/yulizhou/Projects/freed",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=22.0.0",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "vitest",
+        "version": "2.1.0",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "pnpm",
+    "runtime": "Node.js 22.0.0"
+  },
+  "build": {
+    "buildCommand": "pnpm build",
+    "testCommand": "pnpm test",
+    "lintCommand": "pnpm lint",
+    "devCommand": "pnpm dev",
+    "scripts": {
+      "build": "pnpm -r build",
+      "test": "pnpm -r test",
+      "dev": "pnpm --filter @freed/cli dev",
+      "start": "pnpm --filter @freed/cli start",
+      "typecheck": "pnpm -r typecheck",
+      "lint": "pnpm -r lint",
+      "clean": "pnpm -r clean"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": true,
+    "workspaces": [],
+    "mainDirectories": [],
+    "gitBranches": null
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "apps": {
+      "path": "apps",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1775132823991,
+      "keyFiles": []
+    },
+    "packages": {
+      "path": "packages",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1775132823992,
+      "keyFiles": []
+    },
+    "packages/models": {
+      "path": "packages/models",
+      "purpose": "Data models",
+      "fileCount": 3,
+      "lastAccessed": 1775132824032,
+      "keyFiles": [
+        "package.json",
+        "tsconfig.json",
+        "vitest.config.ts"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "packages/shared/src/types.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775026218897,
+      "type": "directory"
+    },
+    {
+      "path": "packages/tools/src/env-context.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775026224213,
+      "type": "file"
+    },
+    {
+      "path": "feature.md",
+      "accessCount": 3,
+      "lastAccessed": 1775026302107,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1775132860479,
+      "type": "file"
+    },
+    {
+      "path": "packages/runtime/package.json",
+      "accessCount": 1,
+      "lastAccessed": 1775026108886,
+      "type": "file"
+    },
+    {
+      "path": "packages/tools/src/shell-tool.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775026117100,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/src/bin.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775026117463,
+      "type": "file"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "accessCount": 1,
+      "lastAccessed": 1775132860997,
+      "type": "file"
+    }
+  ],
+  "userDirectives": [
+    {
+      "timestamp": 1775006791502,
+      "directive": "When features are discussed, sync the result to feature.md. When architecture changes happen, sync the result to arch.md.",
+      "context": "feature.md tracks all implemented features with status. arch.md tracks system architecture and structure. Both must stay current as the codebase evolves.",
+      "source": "explicit",
+      "priority": "high"
+    }
+  ]
+}

@@ -1,7 +1,0 @@
-- support install cc's plugin, gemini's extensions
-- permission system
-- agent编排和调度
-- session管理
-- context strategy
-- memory管理
-- UI优化

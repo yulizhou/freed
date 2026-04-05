@@ -6,6 +6,17 @@
 
 # 引擎：主循环和prompt
 ## 主循环
+while(true):
+1. Prefetch memory + skills (parallel)
+2. Apply message compaction (snip, microcompact, context collapse)
+3. Call API with streaming
+4. Handle streaming errors (fallback, retry)
+5. Execute tools (concurrent or serial)
+6. Check recovery paths (compact, collapse drain, token escalation)
+7. Continue loop or return
+
+### 状态机
+- 每一个循环相当于一个状态，跨循环的信息用状态存储，包括 transition 等
 - 一个while(true)里多个 continue 点，模拟状态机的状态变换
     - 下一轮工具调用
     - reactive compact
@@ -13,6 +24,15 @@
     - stop hook 阻断
     - 模型降级
 - tool 执行也是 streaming 的，不等模型输出完毕，只要流式过程中检测到 tool use 就去执行了
+
+### self-healing
+主循环稳定性很重要
+1. prefetch: 并行读取 Memory 和 skills
+2. compact
+3. track api call usage, stop reason
+4. orphan tool calls recovery
+
+
 
 ## Prompt Design
 src/constants/prompts.ts
@@ -39,14 +59,15 @@ src/constants/prompts.ts
 13.处理结果:结构化输出、tool_result block构建
 14.PostToolUseFailure hooks:如果失败了,跑失败hook
 
-## Tool Pooling
+## Tool 注册和组装
 - available tools must be gated before injecting into the pool
-
+- read in batch, write in serial
+- sort tools alphabetically to max prompt cache hit rates
 
 ## available tools
 - built-in tools
     - file tools (read/write/append, list dir, search)
-    - grep, ripgrep tools
+    - grep（wrapper of ripgrep）, glob
     - git tools (status, diff, commit, push)
     - web search tools
     - LSP for call hierarchy, code search, doc search, etc.
@@ -89,6 +110,11 @@ src/constants/prompts.ts
 10. 调用query()进入主循环
 11. 记录 transcript
 12. 清理MCP连接、hooks、perfettotracing、todos、shelltasks等
+
+## 停止信号
+- LLM 调用 stop hook
+- 工具调用错误
+- 对话轮次达到上限
 
 
 # Permision System
@@ -179,9 +205,26 @@ pass
 用阈值判断，先做 1、2，没法降到阈值以下就再做 3、4，还不够再做 5
 
 
-# Memory
+# Memory记忆
+4 层记忆
+- CLAUDE.md
+- Auto Memory: 每个 session 中自动记录的偏好或 insight 等
+- Session Memory：每个 Session 中的对话记忆，会compact 和 collapse
+- Auto Dream
+
+
 ## Auto Dream 
-后台记忆整理
+- 后台记忆整理
+- 做什么？
+    1. 读取项目记忆、读取最近的 session log 等现有信息
+    2. 从读取的文件中发现有价值的信息
+    3. 优化整理记忆文件，包括转换日期到绝对日期、删除冲突的旧信息、合并冗余重复的信息等
+    4. 裁剪 MEMORY.md 到 200 行或 25KB 以下
+- 运行条件
+    1. 自上次 dream 后超过 24 小时
+    2. 自上次 dream 后超过 5 个 session
+    3. 获取 lock
+- 运行方式：fork agent
 
 
 # Session Management
@@ -203,6 +246,21 @@ save to disk in a structured format (e.g. JSON or SQLite) instead of just append
 - Worklog
 
 
+# 工程化辅助
+## 工具
+- recordSidechainTranscript():记录子 agent 对话，任务中断再续
+- registerPerfettoAgent():性能追踪
+- killShellTasksForAgent():清理无效 shell 进程
+
+## 运行时状态管理
+- 管理全局应用状态，权限模式、MCP 连接、工具配置、模型配置等
+
+# UI 层
+- 输入窗
+- 结果和 thinking 显示
+- 进度条
+- agent 状态
+- diff 显示
 
 
 # 技术栈

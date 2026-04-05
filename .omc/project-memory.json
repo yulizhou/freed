@@ -99,8 +99,14 @@
     },
     {
       "path": "package.json",
+      "accessCount": 3,
+      "lastAccessed": 1775177415951,
+      "type": "file"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
       "accessCount": 2,
-      "lastAccessed": 1775132860479,
+      "lastAccessed": 1775177426246,
       "type": "file"
     },
     {
@@ -122,9 +128,27 @@
       "type": "file"
     },
     {
-      "path": "pnpm-workspace.yaml",
+      "path": "packages",
       "accessCount": 1,
-      "lastAccessed": 1775132860997,
+      "lastAccessed": 1775177427061,
+      "type": "directory"
+    },
+    {
+      "path": "apps/cli/src/app.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775177436287,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/src/prompt.ts",
+      "accessCount": 1,
+      "lastAccessed": 1775177437134,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/package.json",
+      "accessCount": 1,
+      "lastAccessed": 1775177437285,
       "type": "file"
     }
   ],

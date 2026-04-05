@@ -1,46 +1,49 @@
 # Freed
+The Auditable, High-Performance CLI Agent for Modern Developers.
 
-一个支持深度本地化定制、可多 Agent 协作的终端开发助手。
+Freed is more than just a terminal chatbot or another CLI tool just like CC or Codex. It is a digital collaborator designed with transparent and sense of control at its core. Freed is also aiming to  easily integrate into your existing development workflow and switch between work scenarios. 
 
-## 快速上手
+---
 
-```bash
-# 安装依赖
-pnpm install
+# 📅 Roadmap
+## 1. CLI & UI (Interface)
 
-# 构建所有包
-pnpm build
+- [x] Interactive REPL: Conversational loop driven by Node.js readline.
+- [x] Markdown & Code Rendering: Terminal rendering with ANSI colors and syntax highlighting.
+- [ ] Slash Commands: Built-in commands like /clear, /agents, and /help.
+- [ ] TUI Visualization: Real-time dashboard for Agent state machines and tool-call tracing.
+- [ ] Interaction Enhancements: Support for multi-line input and terminal spinners for long-running tasks.
 
-# 安装 CLI 到本地
-pnpm --filter @freed/cli link --global
+## 2. Agent Core & Logic
+- [x] ReAct Execution Loop: Model → Tool Call → Approval → Execute → Repeat cycle.
+- [ ] Multi-Model Routing: Dynamic switching between Anthropic, OpenAI, DeepSeek, and Google.
+- [ ] Environment Awareness: Automated collection of OS, Shell, Git status, and runtime versions.
+- [ ] Scenario Switching: Dynamically swap skill sets and agents based on context (e.g., Coding vs. Office).
+- [ ] Smart Orchestrator: Optimized logic to decide between pre-defined workflows or autonomous agent skills.
 
-# 运行
-freed
-```
+## 3. Skill & Extension System (Tools)
+- [x] Local Skill Loading: Support for .md skill definitions with YAML frontmatter.
+- [x] Native MCP Support: Full integration with Stdio and HTTP/SSE Model Context Protocol servers.
+- [ ] Core Toolset: Built-in tools for file I/O, Shell execution (with risk grading), and Git operations.
+- [ ] Remote Extensions: Install skills and plugins directly from GitHub links.
+- [ ] Server Mode: Expose Freed as a background service via HTTP/gRPC APIs.
 
-## 开发
+## 4. Memory & Context Management
+- [ ] Layered Markdown Storage: Hierarchical memory isolation (Global, Project, Session, Agent).
+- [ ] Context Summarization: Automatic generation of background knowledge for system prompts.
+- [ ] Layered Compact Strategy: Advanced context compression to optimize token usage.
+- [ ] Auto Dream: Structured session memory archiving and extraction for long-term recall.
+- [ ] Pre-flight Token Estimation: Predictive cost analysis and automatic model routing.
 
-```bash
-# 运行测试
-pnpm test
+## 5. Security & Auditability
+- [ ] Risk Classification: Dynamic assessment of shell commands (Safe/Ask/Deny).
+- [ ] Approval Engine: Human-in-the-loop confirmation for sensitive operations.
+- [ ] Decision Traceability (Git Notes): Use Git Notes to link every commit to its AI decision context.
+- [ ] Token Budgeting: Safety breakers to prevent unexpected API costs.
 
-# 类型检查
-pnpm typecheck
+## 6. Architecture & Performance
+- [ ] Architceture decoupling: refactor the architecture into two layers, a high-performance Rust-based engine and flexible TypeScript layer for agentic logic while communicating via gRPC/HTTP.
+- [ ] Performance Telemetry: Instrumentation for evaluation and execution efficiency analysis.
 
-# 开发模式（监听文件变化）
-pnpm dev
-```
-
-## 配置
-
-首次运行时，Freed 会在 `~/.freed/` 下创建默认配置目录。
-
-你可以通过编辑 `~/.freed/agents/agents.md` 来配置 Agent，在 `~/.freed/mcp/servers.json` 里配置 MCP Server。
-
-## 架构
-
-参见 [arch.md](./arch.md)
-
-## 功能
-
-参见 [feature.md](./feature.md)
+# Licensing
+Distributed under the [MIT License](https://www.google.com/search?q=LICENSE).

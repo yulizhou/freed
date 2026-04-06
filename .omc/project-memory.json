@@ -108,8 +108,8 @@
     },
     {
       "path": "package.json",
-      "accessCount": 11,
-      "lastAccessed": 1775487808799,
+      "accessCount": 12,
+      "lastAccessed": 1775488161135,
       "type": "file"
     },
     {
@@ -150,8 +150,20 @@
     },
     {
       "path": "pnpm-workspace.yaml",
+      "accessCount": 8,
+      "lastAccessed": 1775488161476,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/package.json",
+      "accessCount": 8,
+      "lastAccessed": 1775488473571,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/src/bin.ts",
       "accessCount": 7,
-      "lastAccessed": 1775484930988,
+      "lastAccessed": 1775488473192,
       "type": "file"
     },
     {
@@ -179,18 +191,6 @@
       "type": "file"
     },
     {
-      "path": "apps/cli/src/bin.ts",
-      "accessCount": 6,
-      "lastAccessed": 1775486437836,
-      "type": "file"
-    },
-    {
-      "path": "apps/cli/package.json",
-      "accessCount": 6,
-      "lastAccessed": 1775487846571,
-      "type": "file"
-    },
-    {
       "path": "packages",
       "accessCount": 5,
       "lastAccessed": 1775482738336,
@@ -206,6 +206,12 @@
       "path": "packages/models/package.json",
       "accessCount": 5,
       "lastAccessed": 1775485261693,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/src/app.ts",
+      "accessCount": 5,
+      "lastAccessed": 1775488473139,
       "type": "file"
     },
     {
@@ -248,12 +254,6 @@
       "path": "packages/prompt/src/attachments/index.ts",
       "accessCount": 4,
       "lastAccessed": 1775484544039,
-      "type": "file"
-    },
-    {
-      "path": "apps/cli/src/app.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775486437751,
       "type": "file"
     },
     {

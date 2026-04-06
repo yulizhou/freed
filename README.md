@@ -67,5 +67,60 @@ const result = await runtime.run('Your prompt here')
 
 See [architeture.md](./architeture.md) for the full module breakdown.
 
+# Build and Run
+
+## Prerequisites
+
+- **Node.js**: v22.0.0 or higher
+- **pnpm**: v9.0.0 or higher
+
+## Installation
+
+```bash
+# Install dependencies
+pnpm install
+```
+
+## Build
+
+```bash
+# Build all packages
+pnpm build
+```
+
+## Run
+
+After building, link the CLI globally so you can run `freed` from anywhere:
+
+```bash
+# Link the CLI globally
+pnpm --filter @freed/cli link
+```
+
+Now you can run `freed` from any terminal:
+
+```bash
+freed
+```
+
+## Development
+
+```bash
+# Run CLI in development mode (live reload)
+pnpm dev
+
+# Run tests
+pnpm test
+
+# Type check
+pnpm typecheck
+
+# Lint
+pnpm lint
+
+# Clean build artifacts
+pnpm clean
+```
+
 # Licensing
 Distributed under the [MIT License](https://www.google.com/search?q=LICENSE).

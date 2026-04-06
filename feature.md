@@ -13,8 +13,9 @@
 | 代码高亮 | ✅ | `chalk` ANSI 色彩渲染 |
 | Approval 确认流 | ✅ | `ApprovalEngine` — `safe` 自动通过，`ask` 阻断确认，`deny` 自动拒绝 |
 | Slash Commands | ✅ | `SlashCommandRegistry` + 内置 `/clear`、`/agents`、`/help` |
-| 进度提示 Spinner | ⬜ | — |
+| TUI 可视化仪表盘 | ⬜ | — |
 | 多行输入 | ⬜ | — |
+| 进度提示 Spinner | ⬜ | — |
 
 ---
 
@@ -23,12 +24,14 @@
 | 功能 | 状态 | 说明 |
 |------|------|------|
 | ReAct 执行循环 | ✅ | `AgentRuntime.run()` — model → tool call → approval → execute → repeat |
-| 多模型切换 | ✅ | `ModelRouter` 支持 Anthropic / OpenAI / Google / DeepSeek |
+| 多模型切换 | 🔜 | `ModelRouter` 架构已搭好，动态切换尚未完成 |
 | AI SDK 集成 | ✅ | `streamText` from `ai` package |
 | 本地 `agents.md` 配置 | ✅ | `AgentsLoader` — 全局 `~/.freed/agents/` + 项目级 `.freed/agents/` |
 | 多 Agent 协作 | ⬜ | — |
 | 动态环境感知 | ✅ | `collectEnvContext` — OS / Shell / CWD / Node & Bun 版本 / Git branch & status |
 | Structured Tool Calling | ✅ | AI SDK 原生 tool 调用协议 |
+| 场景切换（Scenario Switching） | ⬜ | — |
+| 智能编排器（Smart Orchestrator） | ⬜ | — |
 
 ---
 
@@ -45,6 +48,9 @@
 | MCP 全局配置 | ✅ | `~/.freed/mcp/servers.json` |
 | MCP 项目配置 | ✅ | `.freed/mcp/servers.json`（合并 + 按 name 覆盖） |
 | MCP Doctor 健康检查 | ✅ | `checkMCPServers()` — 逐 server 连接测试 |
+| 核心工具集（文件 I/O、Shell、Git） | ✅ | 内置工具已完成 |
+| 远程扩展（从 GitHub 安装） | ⬜ | — |
+| Server Mode（HTTP/gRPC APIs） | ⬜ | — |
 
 **已注册的内置工具：**
 
@@ -72,15 +78,18 @@
 
 ---
 
-## 5. 本地化记忆与状态管理 (Memory & Storage)
+## 5. 本地化记忆与状态管理 (Memory & Context Management)
 
 | 功能 | 状态 | 说明 |
 |------|------|------|
-| Markdown 记忆存储 | ✅ | `MemoryManager` — 读写 Markdown 文件（gray-matter frontmatter） |
 | 多层级记忆隔离 | ✅ | `scope: global / project / session / agent` |
+| Markdown 记忆存储 | ✅ | `MemoryManager` — 读写 Markdown 文件（gray-matter frontmatter） |
 | 记忆上下文摘要 | ✅ | `MemoryManager.buildContextSummary()` — 注入 system prompt |
 | 项目级 Memory | ✅ | `.freed/memory/project/` |
 | 全局 Memory | ✅ | `~/.freed/memory/global/` |
+| 层级压缩策略（Layered Compact） | ⬜ | — |
+| Auto Dream（梦境记忆归档） | ⬜ | — |
+| Pre-flight Token 估算 | ⬜ | — |
 | SQLite 运行时状态 | ⬜ | —（规划中用于任务队列、事件索引） |
 
 ---
@@ -92,8 +101,19 @@
 | 命令风险分级 | ✅ | `classifyShellRisk` — `safe / ask / deny` |
 | 审批确认 | ✅ | `ApprovalEngine` — 阻断式 `Y/n` 确认 |
 | 审计日志 | ⬜ | — |
+| 决策可追溯（Git Notes） | ⬜ | — |
+| Token 预算控制 | ⬜ | — |
 | 工具超时 | ⬜ | — |
 | 输出截断 | ⬜ | — |
+
+---
+
+## 7. 架构与性能 (Architecture & Performance)
+
+| 功能 | 状态 | 说明 |
+|------|------|------|
+| 架构解耦（Rust 引擎 + TypeScript Agent 层） | ⬜ | — |
+| 性能遥测（Performance Telemetry） | ⬜ | — |
 
 ---
 
@@ -112,7 +132,7 @@ packages/
     slash-commands.ts # Slash 命令注册
 
   models/src/
-    model-router.ts   # 多模型路由
+    model-router.ts   # 多模型路由（架构完成，切换逻辑未实现）
 
   tools/src/
     tool-registry.ts  # 工具注册表

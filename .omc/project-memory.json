@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1775132824082,
+  "lastScanned": 1775469601298,
   "projectRoot": "/Users/yulizhou/Projects/freed",
   "techStack": {
     "languages": [
@@ -48,7 +48,10 @@
     "isMonorepo": true,
     "workspaces": [],
     "mainDirectories": [],
-    "gitBranches": null
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
   },
   "customNotes": [],
   "directoryMap": {
@@ -56,21 +59,21 @@
       "path": "apps",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1775132823991,
+      "lastAccessed": 1775469601278,
       "keyFiles": []
     },
     "packages": {
       "path": "packages",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1775132823992,
+      "lastAccessed": 1775469601278,
       "keyFiles": []
     },
     "packages/models": {
       "path": "packages/models",
       "purpose": "Data models",
       "fileCount": 3,
-      "lastAccessed": 1775132824032,
+      "lastAccessed": 1775469601285,
       "keyFiles": [
         "package.json",
         "tsconfig.json",
@@ -79,6 +82,12 @@
     }
   },
   "hotPaths": [
+    {
+      "path": "feature.md",
+      "accessCount": 5,
+      "lastAccessed": 1775469819757,
+      "type": "file"
+    },
     {
       "path": "packages/shared/src/types.ts",
       "accessCount": 4,
@@ -89,12 +98,6 @@
       "path": "packages/tools/src/env-context.ts",
       "accessCount": 4,
       "lastAccessed": 1775026224213,
-      "type": "file"
-    },
-    {
-      "path": "feature.md",
-      "accessCount": 3,
-      "lastAccessed": 1775026302107,
       "type": "file"
     },
     {

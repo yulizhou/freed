@@ -1,6 +1,72 @@
 import { Marked } from 'marked';
 import { markedTerminal } from 'marked-terminal';
 import chalk from 'chalk';
+import ora from 'ora';
+
+export const CONTINUATION_PROMPT = chalk.gray('· ');
+
+class SpinnerManager {
+  private spinners = new Map<string, ReturnType<typeof ora>>();
+  private graceTimeouts = new Map<string, ReturnType<typeof setTimeout>>();
+
+  startSpinner(label: string): void {
+    const existing = this.spinners.get(label);
+    if (existing) return;
+
+    const timeout = setTimeout(() => {
+      const spinner = ora({ text: label, stream: process.stderr }).start();
+      this.spinners.set(label, spinner);
+      this.graceTimeouts.delete(label);
+    }, 300);
+
+    this.graceTimeouts.set(label, timeout);
+  }
+
+  stopSpinner(label: string, message?: string): void {
+    const timeout = this.graceTimeouts.get(label);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.graceTimeouts.delete(label);
+    }
+
+    const spinner = this.spinners.get(label);
+    if (spinner) {
+      spinner.stop();
+      if (message) process.stderr.write(message + '\n');
+      this.spinners.delete(label);
+    }
+  }
+
+  stopSpinnerWithSuccess(label: string, message?: string): void {
+    const timeout = this.graceTimeouts.get(label);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.graceTimeouts.delete(label);
+    }
+
+    const spinner = this.spinners.get(label);
+    if (spinner) {
+      spinner.succeed(message);
+      this.spinners.delete(label);
+    }
+  }
+
+  stopSpinnerWithError(label: string, message?: string): void {
+    const timeout = this.graceTimeouts.get(label);
+    if (timeout) {
+      clearTimeout(timeout);
+      this.graceTimeouts.delete(label);
+    }
+
+    const spinner = this.spinners.get(label);
+    if (spinner) {
+      spinner.fail(message);
+      this.spinners.delete(label);
+    }
+  }
+}
+
+export const spinnerManager = new SpinnerManager();
 
 const marked = new Marked();
 marked.use(markedTerminal() as Parameters<typeof marked.use>[0]);

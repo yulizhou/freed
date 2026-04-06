@@ -27,12 +27,15 @@ export interface AgentRuntimeOptions {
 }
 
 export interface StreamChunk {
-  type: 'text' | 'tool_call' | 'tool_result' | 'approval_request' | 'approval_denied' | 'done' | 'error';
+  type: 'text' | 'tool_call' | 'tool_result' | 'approval_request' | 'approval_denied' | 'done' | 'error' | 'spinner_start' | 'spinner_stop';
   content?: string;
   toolName?: string;
   toolInput?: unknown;
   toolResult?: string;
   error?: string;
+  label?: string;
+  success?: boolean;
+  message?: string;
 }
 
 export type StreamHandler = (chunk: StreamChunk) => void;
@@ -152,6 +155,8 @@ export class AgentRuntime extends EventEmitter {
 
           onChunk({ type: 'tool_call', toolName: toolDef_.name, toolInput: rawInput });
 
+          onChunk({ type: 'spinner_start', label: 'Running tool...' });
+
           const approved = await this.opts.approvalEngine.check(toolCall, riskLevel);
           if (!approved) {
             onChunk({ type: 'approval_denied', toolName: toolDef_.name });
@@ -163,6 +168,7 @@ export class AgentRuntime extends EventEmitter {
           const result = await toolDef_.execute(rawInput);
           const output = result.success ? result.output : `Error: ${result.error ?? 'unknown'}`;
           onChunk({ type: 'tool_result', toolName: toolDef_.name, toolResult: output });
+          onChunk({ type: 'spinner_stop', label: 'Running tool...', success: result.success });
 
           this.emit('tool:executed', { toolName: toolDef_.name, success: result.success, riskLevel });
 
@@ -181,6 +187,8 @@ export class AgentRuntime extends EventEmitter {
     messages.push(userMsg);
 
     try {
+      onChunk({ type: 'spinner_start', label: 'Thinking...' });
+
       const { textStream, text } = streamText({
         model,
         system: systemPrompt,
@@ -193,9 +201,14 @@ export class AgentRuntime extends EventEmitter {
       });
 
       let fullText = '';
+      let firstChunk = true;
       for await (const chunk of textStream) {
         fullText += chunk;
         onChunk({ type: 'text', content: chunk });
+        if (firstChunk) {
+          onChunk({ type: 'spinner_stop', label: 'Thinking...', success: true });
+          firstChunk = false;
+        }
       }
 
       // Ensure we get the full resolved text

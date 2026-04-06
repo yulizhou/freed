@@ -19,6 +19,8 @@ packages/core/         # @freed/core — The engine: AgentRuntime, tools, skills
 
 - Entry: `src/bin.ts` → calls `runApp()` from `src/app.ts`
 - REPL loop via Node.js `readline` (not Ink/React — plain terminal)
+- Multi-line input: `Shift+Enter` adds a new line, plain `Enter` submits; `Ctrl+C` in multi-line mode clears the buffer without exiting
+- Spinner support via `SpinnerManager` (ora): shows during tool execution and AI warm-up, 300ms grace period prevents flicker
 - Slash command registry, environment context collection, session management
 - Imports from `@freed/core` only — does not own tool registry or agent logic
 
@@ -33,7 +35,7 @@ packages/core/         # @freed/core — The engine: AgentRuntime, tools, skills
 - **MCPGateway**: loads MCP servers, exposes tools to registry
 - **SkillLoader + SkillRegistry**: Scans for `SKILL.md` files in `~/.freed/skills/`, `~/.claude/skills/`, `.freed/skills/`
 - **MemoryManager**: Reads/writes Markdown memory files with frontmatter
-- **Shared types**: `ToolDescriptor`, `ToolCall`, `ToolResult`, `RiskLevel`, `Message`, `Session`, `AgentProfile`, `FreedError`, `ErrorCode`
+- **Shared types**: `ToolDescriptor`, `ToolCall`, `ToolResult`, `RiskLevel`, `Message`, `Session`, `AgentProfile`, `FreedError`, `ErrorCode`, `StreamChunk`
 
 ### Design Rationale
 
@@ -57,6 +59,7 @@ User input
 app.ts: REPL loop
     │ "/slash" command → SlashCommandRegistry
     │ plain text → AgentRuntime.run()
+    │ spinner events (spinner_start/spinner_stop) → SpinnerManager → terminal
     ▼
 AgentRuntime
     ├─ builds system prompt (agent profile + env context + memory + skills)
@@ -212,7 +215,7 @@ Before attempting a Rust refactor: define and document a **stable internal inter
 
 **AI/Model SDKs**: `ai`, `@ai-sdk/anthropic`, `@ai-sdk/openai`, `@ai-sdk/google`
 **MCP**: `@modelcontextprotocol/sdk`
-**CLI**: `commander`, `chalk`, `marked`, `marked-terminal`
+**CLI**: `commander`, `chalk`, `marked`, `marked-terminal`, `ora`
 **Storage**: `gray-matter`
 **Process**: `execa`, `eventemitter3`, `nanoid`, `zod`
 **Dev**: `vitest`, `typescript`, `tsup`

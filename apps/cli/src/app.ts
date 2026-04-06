@@ -26,6 +26,8 @@ import {
   formatError,
   formatInfo,
   formatSuccess,
+  spinnerManager,
+  CONTINUATION_PROMPT,
 } from './renderer.js';
 import chalk from 'chalk';
 import readline from 'node:readline';
@@ -164,11 +166,125 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
   // ── Input loop ─────────────────────────────────────────────────────────────
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
 
-  const askLine = (): Promise<string | null> =>
+  /**
+   * Multi-line input reader using keypress events for Shift+Enter detection.
+   * - Shift+Enter: add current line to buffer, continue
+   * - Enter (no buffer): resolve normally
+   * - Enter (with buffer): join buffer + current line, resolve
+   * - Ctrl+C in multi-line: clear buffer, show fresh prompt
+   * - Buffer cap: 50 lines max
+   */
+  const askLineMulti = (): Promise<string | null> =>
     new Promise((resolve) => {
-      process.stdout.write(chalk.cyan('\n> '));
-      rl.once('line', resolve);
-      rl.once('close', () => resolve(null));
+      const lineBuffer: string[] = [];
+      let isMultiLine = false;
+      let currentLine = '';
+
+      const showPrompt = (): void => {
+        process.stdout.write(chalk.cyan(isMultiLine ? CONTINUATION_PROMPT : '\n> '));
+      };
+
+      const cleanup = (): void => {
+        rl.removeAllListeners('line');
+        rl.removeAllListeners('close');
+        process.stdin.removeAllListeners('keypress');
+      };
+
+      const resolveWithInput = (): void => {
+        cleanup();
+        if (lineBuffer.length > 0) {
+          lineBuffer.push(currentLine);
+          resolve(lineBuffer.join('\n'));
+        } else {
+          resolve(currentLine || null);
+        }
+      };
+
+      // Readline 'line' event fires on Enter
+      rl.once('line', (line) => {
+        if (!isMultiLine) {
+          cleanup();
+          resolve(line || null);
+          return;
+        }
+        // Multi-line mode: Shift+Enter was handled via keypress
+        // This 'line' event fires for plain Enter
+        resolveWithInput();
+      });
+
+      rl.once('close', () => {
+        cleanup();
+        resolve(null);
+      });
+
+      // Enable raw mode for keypress detection
+      const prevRaw = process.stdin.isRaw;
+      if (process.stdin.isTTY && !process.stdin.isRaw) {
+        process.stdin.setRawMode?.(true);
+      }
+
+      process.stdin.on('keypress', (str, key) => {
+        if (key.name === 'return') {
+          if (key.shift) {
+            // Shift+Enter: add current line to buffer, continue
+            if (lineBuffer.length < 50) {
+              lineBuffer.push(currentLine);
+              currentLine = '';
+              isMultiLine = true;
+              // Clear current line display
+              readline.moveCursor(process.stdout, 0, -1);
+              readline.clearLine(process.stdout, 0);
+              process.stdout.write(CONTINUATION_PROMPT);
+            }
+          } else {
+            // Plain Enter
+            if (!isMultiLine) {
+              // Buffer empty, resolve normally
+              cleanup();
+              process.stdin.setRawMode?.(prevRaw ?? false);
+              // Write the line so readline sees it
+              process.stdout.write('\n');
+              resolve(currentLine || null);
+            } else {
+              // Multi-line has content, join and resolve
+              cleanup();
+              process.stdin.setRawMode?.(prevRaw ?? false);
+              process.stdout.write('\n');
+              resolveWithInput();
+            }
+          }
+        } else if (key.name === 'c' && key.ctrl) {
+          // Ctrl+C
+          cleanup();
+          process.stdin.setRawMode?.(prevRaw ?? false);
+          currentLine = '';
+          lineBuffer.length = 0;
+          isMultiLine = false;
+          process.stdout.write('^C\n');
+          showPrompt();
+          // Re-register to continue reading
+          rl.once('line', (line) => {
+            cleanup();
+            process.stdin.setRawMode?.(prevRaw ?? false);
+            resolve(line || null);
+          });
+        } else if (key.name === 'backspace' && currentLine.length === 0 && lineBuffer.length > 0) {
+          // Backspace on empty line: remove last buffer line
+          const last = lineBuffer.pop();
+          if (last !== undefined) {
+            currentLine = last;
+            isMultiLine = lineBuffer.length > 0;
+            readline.moveCursor(process.stdout, 0, -1);
+            readline.clearLine(process.stdout, 0);
+            process.stdout.write(isMultiLine ? CONTINUATION_PROMPT : chalk.cyan('> '));
+            process.stdout.write(currentLine);
+          }
+        } else if (str) {
+          currentLine += str;
+        }
+      });
+
+      showPrompt();
     });
 
   rl.on('SIGINT', () => {
@@ -185,7 +301,7 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
   // Main REPL loop
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    const input = await askLine();
+    const input = await askLineMulti();
 
     if (input === null) {
       break; // EOF / Ctrl+D
@@ -249,6 +365,18 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
 
         case 'error':
           process.stdout.write('\n' + formatError(chunk.error ?? 'Unknown error') + '\n');
+          break;
+
+        case 'spinner_start':
+          spinnerManager.startSpinner(chunk.label ?? '');
+          break;
+
+        case 'spinner_stop':
+          if (chunk.success) {
+            spinnerManager.stopSpinnerWithSuccess(chunk.label ?? '', chunk.message);
+          } else {
+            spinnerManager.stopSpinnerWithError(chunk.label ?? '', chunk.message);
+          }
           break;
 
         default:

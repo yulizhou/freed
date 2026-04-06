@@ -14,8 +14,8 @@
 | Approval 确认流 | ✅ | `ApprovalEngine` — `safe` 自动通过，`ask` 阻断确认，`deny` 自动拒绝 |
 | Slash Commands | ✅ | `SlashCommandRegistry` + 内置 `/clear`、`/agents`、`/help` |
 | TUI 可视化仪表盘 | ⬜ | — |
-| 多行输入 | ⬜ | — |
-| 进度提示 Spinner | ⬜ | — |
+| 多行输入 | ✅ | `apps/cli/src/app.ts` — `Shift+Enter` 添加新行，`Enter` 提交；`Ctrl+C` 清空当前输入 |
+| 进度提示 Spinner | ✅ | `apps/cli/src/renderer.ts` — `SpinnerManager`（`ora`）；工具执行和 AI 思考期间显示 spinner，300ms 宽限期防闪烁 |
 
 ---
 

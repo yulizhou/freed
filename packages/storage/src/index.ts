@@ -1,3 +1,4 @@
-export { MemoryManager } from './memory-manager.js';
-export type { MemoryManagerOptions, MemoryFile } from './memory-manager.js';
-export { AgentsLoader } from './agents-loader.js';
+// DEPRECATED: @freed/storage is deprecated. Use @freed/core instead.
+// This stub exists only for runtime compatibility — imports are resolved via pnpm workspace.
+// Do not build this package; it has no distributable source.
+

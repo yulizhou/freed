@@ -90,9 +90,39 @@
     },
     {
       "path": "packages/shared/src/types.ts",
-      "accessCount": 12,
-      "lastAccessed": 1775479284199,
+      "accessCount": 14,
+      "lastAccessed": 1775485128360,
       "type": "directory"
+    },
+    {
+      "path": "packages/prompt/package.json",
+      "accessCount": 13,
+      "lastAccessed": 1775486995467,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/src/index.ts",
+      "accessCount": 13,
+      "lastAccessed": 1775487018720,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 11,
+      "lastAccessed": 1775487808799,
+      "type": "file"
+    },
+    {
+      "path": "",
+      "accessCount": 10,
+      "lastAccessed": 1775482738694,
+      "type": "directory"
+    },
+    {
+      "path": "architeture.md",
+      "accessCount": 10,
+      "lastAccessed": 1775487700952,
+      "type": "file"
     },
     {
       "path": "packages/prompt/src/attachments/injectDynamicAttachments.ts",
@@ -101,15 +131,9 @@
       "type": "file"
     },
     {
-      "path": "packages/prompt/package.json",
+      "path": "packages/runtime/package.json",
       "accessCount": 9,
-      "lastAccessed": 1775478455326,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/index.ts",
-      "accessCount": 8,
-      "lastAccessed": 1775476992318,
+      "lastAccessed": 1775484865007,
       "type": "file"
     },
     {
@@ -119,10 +143,16 @@
       "type": "file"
     },
     {
-      "path": "",
+      "path": "packages/shared/src/index.ts",
       "accessCount": 8,
-      "lastAccessed": 1775478449339,
-      "type": "directory"
+      "lastAccessed": 1775486871126,
+      "type": "file"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "accessCount": 7,
+      "lastAccessed": 1775484930988,
+      "type": "file"
     },
     {
       "path": "packages/tools/src/env-context.ts",
@@ -137,51 +167,51 @@
       "type": "directory"
     },
     {
-      "path": "packages/prompt/src/context/index.ts",
-      "accessCount": 5,
-      "lastAccessed": 1775477055122,
-      "type": "file"
-    },
-    {
       "path": "packages/prompt/src/assemble/index.ts",
-      "accessCount": 5,
-      "lastAccessed": 1775477056954,
+      "accessCount": 6,
+      "lastAccessed": 1775482744780,
       "type": "file"
     },
     {
-      "path": "package.json",
-      "accessCount": 5,
-      "lastAccessed": 1775478448647,
+      "path": "packages/prompt/src/context/index.ts",
+      "accessCount": 6,
+      "lastAccessed": 1775482745303,
       "type": "file"
     },
     {
-      "path": "packages/runtime/package.json",
-      "accessCount": 5,
-      "lastAccessed": 1775479259692,
+      "path": "apps/cli/src/bin.ts",
+      "accessCount": 6,
+      "lastAccessed": 1775486437836,
       "type": "file"
     },
     {
-      "path": "packages/prompt/src/types.ts",
-      "accessCount": 4,
-      "lastAccessed": 1775476801903,
+      "path": "apps/cli/package.json",
+      "accessCount": 6,
+      "lastAccessed": 1775487846571,
       "type": "file"
     },
     {
       "path": "packages",
-      "accessCount": 4,
-      "lastAccessed": 1775476810217,
+      "accessCount": 5,
+      "lastAccessed": 1775482738336,
       "type": "directory"
+    },
+    {
+      "path": "packages/prompt/src/types.ts",
+      "accessCount": 5,
+      "lastAccessed": 1775484530735,
+      "type": "file"
+    },
+    {
+      "path": "packages/models/package.json",
+      "accessCount": 5,
+      "lastAccessed": 1775485261693,
+      "type": "file"
     },
     {
       "path": "packages/prompt/src/context/getUserContext.ts",
       "accessCount": 4,
       "lastAccessed": 1775477328830,
-      "type": "file"
-    },
-    {
-      "path": "pnpm-workspace.yaml",
-      "accessCount": 4,
-      "lastAccessed": 1775477380330,
       "type": "file"
     },
     {
@@ -191,15 +221,45 @@
       "type": "file"
     },
     {
+      "path": "packages/prompt/src/sections/env.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775484498448,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/src/sections/tools.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775484498623,
+      "type": "file"
+    },
+    {
       "path": "packages/prompt/src/sections/skills.ts",
-      "accessCount": 3,
-      "lastAccessed": 1775476821449,
+      "accessCount": 4,
+      "lastAccessed": 1775484500583,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/src/sectionRegistry.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775484532564,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/src/attachments/index.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775484544039,
+      "type": "file"
+    },
+    {
+      "path": "apps/cli/src/app.ts",
+      "accessCount": 4,
+      "lastAccessed": 1775486437751,
       "type": "file"
     },
     {
       "path": "packages/prompt/tsup.config.ts",
-      "accessCount": 3,
-      "lastAccessed": 1775477222343,
+      "accessCount": 4,
+      "lastAccessed": 1775486995933,
       "type": "file"
     },
     {
@@ -209,45 +269,39 @@
       "type": "file"
     },
     {
-      "path": "packages/prompt/src/sections/env.ts",
+      "path": "packages/prompt/src/sections/base.ts",
       "accessCount": 3,
-      "lastAccessed": 1775477236304,
+      "lastAccessed": 1775484496453,
       "type": "file"
     },
     {
-      "path": "packages/prompt/src/sections/tools.ts",
+      "path": "packages/prompt/src/sections/memory.ts",
       "accessCount": 3,
-      "lastAccessed": 1775477236826,
+      "lastAccessed": 1775484499354,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/src/sections/language.ts",
+      "accessCount": 3,
+      "lastAccessed": 1775484499441,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/src/sections/index.ts",
+      "accessCount": 3,
+      "lastAccessed": 1775484500721,
+      "type": "file"
+    },
+    {
+      "path": "packages/tools/src/mcp-gateway.ts",
+      "accessCount": 3,
+      "lastAccessed": 1775485194411,
       "type": "file"
     },
     {
       "path": "apps/cli/src/prompt.ts",
       "accessCount": 2,
       "lastAccessed": 1775476188412,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/sectionRegistry.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775476745236,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/sections/base.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775476750058,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/sections/memory.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775476751387,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/sections/language.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775476752217,
       "type": "file"
     },
     {
@@ -263,33 +317,27 @@
       "type": "file"
     },
     {
-      "path": "packages/shared/src/index.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775476821540,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/attachments/index.ts",
-      "accessCount": 2,
-      "lastAccessed": 1775477004830,
-      "type": "file"
-    },
-    {
       "path": "packages/prompt/src/transport/splitSystemPromptBlocks.ts",
       "accessCount": 2,
       "lastAccessed": 1775477006055,
       "type": "file"
     },
     {
-      "path": "packages/models/package.json",
+      "path": "packages/models/src/model-router.ts",
       "accessCount": 2,
-      "lastAccessed": 1775478454011,
+      "lastAccessed": 1775485128445,
       "type": "file"
     },
     {
-      "path": "packages/tools/src/mcp-gateway.ts",
+      "path": "packages/tools/src/tool-registry.ts",
       "accessCount": 2,
-      "lastAccessed": 1775478935932,
+      "lastAccessed": 1775485210704,
+      "type": "file"
+    },
+    {
+      "path": "packages/prompt/vitest.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1775485727730,
       "type": "file"
     },
     {
@@ -299,33 +347,9 @@
       "type": "file"
     },
     {
-      "path": "apps/cli/src/bin.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775026117463,
-      "type": "file"
-    },
-    {
-      "path": "apps/cli/src/app.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775177436287,
-      "type": "file"
-    },
-    {
-      "path": "apps/cli/package.json",
-      "accessCount": 1,
-      "lastAccessed": 1775177437285,
-      "type": "file"
-    },
-    {
       "path": "prompt-architecture.md",
       "accessCount": 1,
       "lastAccessed": 1775476170260,
-      "type": "file"
-    },
-    {
-      "path": "architeture.md",
-      "accessCount": 1,
-      "lastAccessed": 1775476170396,
       "type": "file"
     },
     {
@@ -335,33 +359,9 @@
       "type": "file"
     },
     {
-      "path": "packages/models/src/model-router.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775476188859,
-      "type": "file"
-    },
-    {
-      "path": "packages/tools/src/tool-registry.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775476194166,
-      "type": "file"
-    },
-    {
       "path": "packages/storage/src/agents-loader.ts",
       "accessCount": 1,
       "lastAccessed": 1775476194726,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/vitest.config.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775476691698,
-      "type": "file"
-    },
-    {
-      "path": "packages/prompt/src/sections/index.ts",
-      "accessCount": 1,
-      "lastAccessed": 1775476734637,
       "type": "file"
     },
     {

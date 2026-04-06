@@ -2,7 +2,16 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
+    "baseUrl": ".",
+    "paths": {
+      "../mcp/doctor": ["./src/mcp/doctor"],
+      "../mcp/server-impl": ["./src/mcp/server-impl"],
+      "../mcp/config-loader": ["./src/mcp/config-loader"],
+      "../mcp/tool-adapter": ["./src/mcp/tool-adapter"],
+      "../mcp-gateway": ["./src/mcp-gateway"],
+      "../tool-registry": ["./src/tool-registry"]
+    }
   },
   "include": ["src"]
 }

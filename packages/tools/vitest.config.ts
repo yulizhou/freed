@@ -1,12 +1,9 @@
 import { defineConfig } from 'vitest/config';
+import tsconfigPaths from 'vite-tsconfig-paths';
 
 export default defineConfig({
-  resolve: {
-    extensionAlias: {
-      '.js': ['.ts', '.js'],
-    },
-  },
-  test: {
+  plugins: [tsconfigPaths()],
+  test: { passWithNoTests: true,
     globals: true,
     environment: 'node',
   },

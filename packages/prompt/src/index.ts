@@ -1,7 +1,3 @@
-export * from './types.js'
-export * from './sectionRegistry.js'
-export * from './sections/index.js'
-export * from './assemble/index.js'
-export * from './context/index.js'
-export * from './attachments/index.js'
-export * from './transport/index.js'
+// DEPRECATED: @freed/prompt is deprecated. Use @freed/core instead.
+// This stub exists only for runtime compatibility — imports are resolved via pnpm workspace.
+// Do not build this package; it has no distributable source.

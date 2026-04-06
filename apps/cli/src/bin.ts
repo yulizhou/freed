@@ -31,10 +31,10 @@ program
   .option('-y, --yolo', 'Auto-approve all tool calls', false)
   .action(async (prompt: string, options: { agent: string; yolo: boolean }) => {
     // For non-interactive run, collect a single response and exit
-    const { ToolRegistry, BUILT_IN_TOOLS, collectEnvContext } = await import('@freed/tools');
-    const { MemoryManager, AgentsLoader } = await import('@freed/storage');
-    const { ModelRouter } = await import('@freed/models');
-    const { AgentRuntime, ApprovalEngine, createSession } = await import('@freed/runtime');
+    const { ToolRegistry, BUILT_IN_TOOLS, collectEnvContext } = await import('@freed/core');
+    const { MemoryManager, AgentsLoader } = await import('@freed/core');
+    const { ModelRouter } = await import('@freed/core');
+    const { AgentRuntime, ApprovalEngine, createSession } = await import('@freed/core');
     const { renderMarkdown, formatError } = await import('./renderer.js');
 
     const toolRegistry = new ToolRegistry();
@@ -67,7 +67,7 @@ program
   .description('List or manage memory entries')
   .option('-s, --scope <scope>', 'Memory scope: global | project | session', 'project')
   .action(async (options: { scope: string }) => {
-    const { MemoryManager } = await import('@freed/storage');
+    const { MemoryManager } = await import('@freed/core');
     const manager = new MemoryManager();
     const scope = options.scope as 'global' | 'project' | 'session' | 'agent';
     const entries = await manager.read(scope);
@@ -84,8 +84,8 @@ program
   .command('doctor')
   .description('Check your Freed setup')
   .action(async () => {
-    const { collectEnvContext } = await import('@freed/tools');
-    const { AgentsLoader } = await import('@freed/storage');
+    const { collectEnvContext } = await import('@freed/core');
+    const { AgentsLoader } = await import('@freed/core');
     const chalk = (await import('chalk')).default;
 
     console.log(chalk.bold('\nFreed Doctor\n'));

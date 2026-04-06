@@ -1,20 +1,20 @@
 import os from 'node:os';
 import path from 'node:path';
 import process from 'node:process';
-import type { AgentProfile } from '@freed/shared';
-import { loadSkillsFromDir } from '@freed/skills';
-import { skillRegistry } from '@freed/runtime';
-import { ToolRegistry, BUILT_IN_TOOLS, collectEnvContext } from '@freed/tools';
-import { MemoryManager, AgentsLoader } from '@freed/storage';
-import { ModelRouter } from '@freed/models';
+import type { AgentProfile } from '@freed/core';
+import { loadSkillsFromDir } from '@freed/core';
+import { skillRegistry } from '@freed/core';
+import { ToolRegistry, BUILT_IN_TOOLS, collectEnvContext } from '@freed/core';
+import { MemoryManager, AgentsLoader } from '@freed/core';
+import { ModelRouter } from '@freed/core';
 import {
   AgentRuntime,
   ApprovalEngine,
   createSession,
   appendMessages,
   createBuiltinCommands,
-} from '@freed/runtime';
-import type { StreamChunk } from '@freed/runtime';
+} from '@freed/core';
+import type { StreamChunk } from '@freed/core';
 import { askConfirmation } from './prompt.js';
 import {
   renderMarkdown,

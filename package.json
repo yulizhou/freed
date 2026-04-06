@@ -5,7 +5,7 @@
   "description": "A terminal-native agentic coding assistant",
   "type": "module",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm --filter @freed/core build && pnpm -r build",
     "test": "pnpm -r test",
     "dev": "pnpm --filter @freed/cli dev",
     "start": "pnpm --filter @freed/cli start",

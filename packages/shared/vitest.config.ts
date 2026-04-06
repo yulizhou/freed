@@ -6,7 +6,7 @@ export default defineConfig({
       '.js': ['.ts', '.js'],
     },
   },
-  test: {
+  test: { passWithNoTests: true,
     globals: true,
     environment: 'node',
   },

@@ -15,12 +15,7 @@
     "clean": "rm -rf dist"
   },
   "dependencies": {
-    "@freed/models": "workspace:*",
-    "@freed/runtime": "workspace:*",
-    "@freed/shared": "workspace:*",
-    "@freed/skills": "workspace:*",
-    "@freed/storage": "workspace:*",
-    "@freed/tools": "workspace:*",
+    "@freed/core": "workspace:*",
     "chalk": "^5.4.1",
     "commander": "^12.1.0",
     "dotenv": "^17.3.1",

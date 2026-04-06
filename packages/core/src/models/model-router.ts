@@ -10,6 +10,7 @@ export interface ModelRouterOptions {
     openai?: string;
     google?: string;
     deepseek?: string;
+    openrouter?: string;
   };
   baseUrls?: {
     openai?: string;
@@ -21,9 +22,11 @@ export interface ModelRouterOptions {
  * corresponding AI SDK LanguageModel instance.
  *
  * Supported prefixes:
- *   anthropic/  →  @ai-sdk/anthropic
- *   openai/     →  @ai-sdk/openai
- *   google/     →  @ai-sdk/google
+ *   anthropic/   →  @ai-sdk/anthropic
+ *   openai/      →  @ai-sdk/openai
+ *   google/      →  @ai-sdk/google
+ *   deepseek/    →  @ai-sdk/openai (OpenAI-compatible)
+ *   openrouter/  →  @ai-sdk/openai (OpenAI-compatible, baseURL: openrouter.ai)
  */
 export class ModelRouter {
   private readonly opts: ModelRouterOptions;
@@ -78,6 +81,15 @@ export class ModelRouter {
           ...(apiKey ? { apiKey } : {}),
         });
         return deepseek(model);
+      }
+
+      case 'openrouter': {
+        const apiKey = this.opts.apiKeys?.openrouter ?? process.env['OPENROUTER_API_KEY'];
+        const openrouter = createOpenAI({
+          baseURL: 'https://openrouter.ai/api/v1',
+          ...(apiKey ? { apiKey } : {}),
+        });
+        return openrouter(model);
       }
 
       default:

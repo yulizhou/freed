@@ -54,7 +54,30 @@ Freed is more than just a terminal chatbot or another CLI tool just like CC or C
 - [x] Transport Layer: API block splitting with `cacheScope` metadata.
 - [x] Skill Templates: Parameterized skill prompts with argument substitution.
 
-## Use as a Library
+## Model Providers
+
+Freed uses the Vercel AI SDK to support multiple model providers. Configure your API keys in a `.env` file in the project root.
+
+### Supported Providers
+
+| Provider | Model Prefix | Env Variable |
+|----------|-------------|--------------|
+| Anthropic | `anthropic/` | `ANTHROPIC_API_KEY` |
+| OpenAI | `openai/` | `OPENAI_API_KEY` |
+| Google AI | `google/` | `GOOGLE_API_KEY` |
+| DeepSeek | `deepseek/` | `DEEPSEEK_API_KEY` or `MODEL_KEY` |
+| OpenRouter | `openrouter/` | `OPENROUTER_API_KEY` |
+
+### Example `.env` File
+
+```bash
+# At least one API key is required
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+OPENROUTER_API_KEY=sk-or-...
+```
+
+### Use as a Library
 
 `@freed/core` is designed to be usable as a building block for your own CLI tools:
 

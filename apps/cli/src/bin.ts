@@ -99,11 +99,12 @@ program
     const hasOpenAIKey = Boolean(process.env['OPENAI_API_KEY']);
     const hasGoogleKey = Boolean(process.env['GOOGLE_API_KEY']);
     const hasDeepSeekKey = Boolean(process.env['DEEPSEEK_API_KEY'] ?? process.env['MODEL_KEY']);
-
+    const hasOpenRouterKey = Boolean(process.env['OPENROUTER_API_KEY']);
     console.log(`${hasAnthropicKey ? '✓' : '✗'} ANTHROPIC_API_KEY: ${hasAnthropicKey ? 'set' : 'not set'}`);
     console.log(`${hasOpenAIKey ? '✓' : '✗'} OPENAI_API_KEY: ${hasOpenAIKey ? 'set' : 'not set'}`);
     console.log(`${hasGoogleKey ? '✓' : '✗'} GOOGLE_API_KEY: ${hasGoogleKey ? 'set' : 'not set'}`);
     console.log(`${hasDeepSeekKey ? '✓' : '✗'} DEEPSEEK_API_KEY / MODEL_KEY: ${hasDeepSeekKey ? 'set' : 'not set'}`);
+    console.log(`${hasOpenRouterKey ? '✓' : '✗'} OPENROUTER_API_KEY: ${hasOpenRouterKey ? 'set' : 'not set'}`);
 
     const loader = new AgentsLoader();
     const profiles = await loader.load();

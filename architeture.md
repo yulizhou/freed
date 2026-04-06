@@ -27,7 +27,7 @@ packages/core/         # @freed/core — The engine: AgentRuntime, tools, skills
 - **AgentRuntime**: ReAct loop — builds system prompt, calls AI SDK `streamText`, routes tool calls through `ApprovalEngine`, executes tools, collects results
 - **ApprovalEngine**: Risk-scoring and user-confirmation gate for medium/ask risk tools
 - **Session / Messages**: `createSession`, `appendMessages`, `trimSession`
-- **SlashCommandRegistry**: Built-in commands (`/clear`, `/agents`, `/help`) + extensibility
+- **SlashCommandRegistry**: Built-in commands (`/clear`, `/agents`, `/help`, `/quit`, `/exit`, `/review`, `/bug`, `/tools`, `/memory`, `/skills`, `/skill`, `/reload-skills`) + extensibility
 - **ModelRouter**: Resolves model strings (`anthropic/claude-sonnet-4-6`) to AI SDK provider instances. Supports: Anthropic, OpenAI, Google, DeepSeek, OpenRouter
 - **ToolRegistry**: `ToolRegistry` singleton pre-loaded with built-in tools (`readFileTool`, `writeFileTool`, `listDirTool`, `shellTool`, `gitStatusTool`, `gitDiffTool`, `gitLogTool`) + MCP Gateway
 - **MCPGateway**: loads MCP servers, exposes tools to registry

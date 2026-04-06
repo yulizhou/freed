@@ -44,6 +44,7 @@ export const MessageSchema = z.object({
   toolCall: ToolCallSchema.optional(),
   toolResult: ToolResultSchema.optional(),
   createdAt: z.date(),
+  isMeta: z.boolean().optional(),
 });
 export type Message = z.infer<typeof MessageSchema>;
 

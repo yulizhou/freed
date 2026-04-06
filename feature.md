@@ -117,6 +117,49 @@
 
 ---
 
+## 8. 分层 Prompt 架构 (Prompt Architecture)
+
+> 基于 `prompt-architecture.md` 参考设计实现的 5 层 prompt 运行时。
+
+| 层级 | 状态 | 说明 |
+|------|------|------|
+| **Definition Layer** - `packages/prompt/src/sections/` | ✅ | Base intro/system/tone, env, tools, memory, language, skills |
+| **Assembly Layer** - `packages/prompt/src/assemble/` | ✅ | `getDefaultSystemPrompt()` + `buildEffectiveSystemPrompt()` 优先级组装 |
+| **Context Injection Layer** - `packages/prompt/src/context/` | ✅ | `getUserContext()` + `getSystemContext()` 双通道注入 |
+| **Attachment Layer** - `packages/prompt/src/attachments/` | ✅ | `system-reminder` 协议 per-turn 动态附件 |
+| **Transport Layer** - `packages/prompt/src/transport/` | ✅ | `splitSysPromptPrefix()` API block + cacheScope |
+| **Section Registry** - `packages/prompt/src/sectionRegistry.ts` | ✅ | `PromptSection` + memoization + cacheBreak 语义 |
+| **PromptTemplate (Skill)** - `packages/skills/src/skill.ts` | ✅ | `SkillTemplate.getPromptForCommand()` 参数化 skill 模板 |
+| `SYSTEM_PROMPT_DYNAMIC_BOUNDARY` 缓存分隔标记 | ✅ | 静态/动态 section 分离，支持 global cache |
+| 优先级覆盖 (override > agent > custom > default) | ✅ | `buildEffectiveSystemPrompt()` |
+
+**核心文件：**
+```
+packages/prompt/src/
+  types.ts              # PromptSection, SystemPrompt, PromptBlock, PromptAttachment
+  sectionRegistry.ts     # systemPromptSection() / uncachedSystemPromptSection() + memoization
+  sections/
+    base.ts             # 身份、Tone & Style、输出效率 section
+    env.ts              # EnvContext 格式化
+    tools.ts            # ToolDescriptor 列表（带风险标签）
+    memory.ts           # MemoryManager 集成
+    language.ts         # 语言/作用域设置
+    skills.ts           # Skill 调用说明
+  assemble/
+    getDefaultSystemPrompt.ts  # 构建默认 system prompt（string[] + boundary marker）
+    buildEffectiveSystemPrompt.ts # 优先级覆盖组装
+  context/
+    getUserContext.ts   # UserContext（注入为 meta user message）
+    getSystemContext.ts  # SystemContext（追加到 system prompt）
+  attachments/
+    createSystemReminder.ts    # wrapInSystemReminder()
+    injectDynamicAttachments.ts # skill_discovery / mcp_delta / relevant_memories
+  transport/
+    splitSystemPromptBlocks.ts # 按 cacheScope 切分 API blocks
+```
+
+---
+
 ## 已实现的核心文件
 
 ```

@@ -13,6 +13,15 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
+      exclude: [
+        '**/*.d.ts',
+        '**/dist/**',
+        '**/index.ts',
+        '**/types.ts',
+        '**/transport/**',
+        'packages/**/types.ts',
+        'packages/mcp/**/*.ts',
+      ],
     },
   },
 });

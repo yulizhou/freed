@@ -11,6 +11,12 @@ import { MemoryManager } from '@freed/storage';
 import { ApprovalEngine } from './approval-engine.js';
 import { skillRegistry } from './skill-registry.js';
 import type { Skill } from '@freed/skills';
+import {
+  getDefaultSystemPrompt,
+  buildEffectiveSystemPrompt,
+  getUserContext,
+  getSystemContext,
+} from '@freed/prompt';
 
 export interface AgentRuntimeOptions {
   modelRouter?: ModelRouter;
@@ -58,27 +64,69 @@ export class AgentRuntime extends EventEmitter {
   ): Promise<Message[]> {
     const model = this.opts.modelRouter.resolve(agentProfile.model);
 
-    // Build system prompt with memory context
-    let memorySummary = '';
-    try {
-      memorySummary = await this.opts.memoryManager.buildContextSummary(['global', 'project']);
-    } catch {
-      // memory not critical
+    // Get user context for meta user message (prependUserContext pattern)
+    const projectName = envContext.cwd.split('/').pop()
+    const userContextArgs: { projectName?: string; sessionStartDate: Date } = {
+      sessionStartDate: new Date(),
     }
+    if (projectName !== undefined) {
+      userContextArgs.projectName = projectName
+    }
+    const userContext = await getUserContext(userContextArgs);
+
+    // Get system context for appending to system prompt (appendSystemContext pattern)
+    const systemContextArgs: { gitBranch?: string; gitStatus?: string } = {}
+    if (envContext.gitBranch !== undefined) {
+      systemContextArgs.gitBranch = envContext.gitBranch
+    }
+    if (envContext.gitChangedFiles?.length) {
+      systemContextArgs.gitStatus = `Changed: ${envContext.gitChangedFiles.join(', ')}`
+    }
+    const systemContext = getSystemContext(systemContextArgs);
+
+    // Get tools for the agent
+    const agentTools = this.opts.toolRegistry.forAgent(agentProfile.tools);
 
     // Load skills for project
-    let skillsContext = '';
+    let skills: Skill[] = [];
     try {
-      const skills = skillRegistry.getForProject(envContext.cwd);
+      skills = skillRegistry.getForProject(envContext.cwd);
       if (skills.length > 0) {
         console.info(`Loaded ${skills.length} skills for project`);
-        skillsContext = skills.map((s: Skill) => s.content).join('\n\n---\n\n');
       }
     } catch {
       // skills not critical
     }
 
-    const systemPrompt = buildSystemPrompt(agentProfile.systemPrompt, envContext, memorySummary, skillsContext);
+    // Build default system prompt using the layered assemble layer
+    const defaultSystemPrompt = await getDefaultSystemPrompt({
+      tools: agentTools,
+      env: envContext,
+      skills,
+      getMemorySummary: async () => {
+        try {
+          return await this.opts.memoryManager.buildContextSummary(['global', 'project']);
+        } catch {
+          return '';
+        }
+      },
+    });
+
+    // Apply priority-based effective prompt logic
+    const effectivePrompt = buildEffectiveSystemPrompt({
+      mainThreadAgentDefinition: agentProfile,
+      defaultSystemPrompt,
+    });
+
+    // Apply priority-based effective prompt logic (already string[])
+    // Append system context to the system prompt
+    const systemContextLines = Object.entries(systemContext)
+      .map(([k, v]) => `  ${k}: ${v}`)
+      .join('\n');
+    const systemPromptSuffix = systemContextLines
+      ? `\n## System Context\n${systemContextLines}`
+      : '';
+    const systemPrompt = effectivePrompt.join('\n') + systemPromptSuffix;
 
     // Convert session messages to AI SDK format
     const history = session.messages
@@ -86,7 +134,6 @@ export class AgentRuntime extends EventEmitter {
       .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
     // Build tools for AI SDK
-    const agentTools = this.opts.toolRegistry.forAgent(agentProfile.tools);
     const aiTools: ToolSet = {};
 
     for (const toolDef of agentTools) {
@@ -173,32 +220,4 @@ export class AgentRuntime extends EventEmitter {
 
     return messages;
   }
-}
-
-function buildSystemPrompt(
-  agentSystemPrompt: string,
-  env: EnvContext,
-  memorySummary: string,
-  skillsContext: string,
-): string {
-  const parts: string[] = [agentSystemPrompt];
-
-  parts.push(`\n## Environment\n- OS: ${env.os}\n- Shell: ${env.shell}\n- CWD: ${env.cwd}\n- Node: ${env.nodeVersion}`);
-
-  if (env.gitBranch) {
-    parts.push(`- Git branch: ${env.gitBranch}`);
-  }
-  if (env.gitChangedFiles && env.gitChangedFiles.length > 0) {
-    parts.push(`- Changed files: ${env.gitChangedFiles.join(', ')}`);
-  }
-
-  if (memorySummary) {
-    parts.push(`\n## Memory\n${memorySummary}`);
-  }
-
-  if (skillsContext) {
-    parts.push(`\n## Skills\n${skillsContext}`);
-  }
-
-  return parts.join('\n');
 }

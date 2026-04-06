@@ -24,6 +24,7 @@
     "@freed/tools": "workspace:*",
     "@freed/storage": "workspace:*",
     "@freed/skills": "workspace:*",
+    "@freed/prompt": "workspace:*",
     "ai": "^4.3.0",
     "eventemitter3": "^5.0.0",
     "p-queue": "^8.1.0",

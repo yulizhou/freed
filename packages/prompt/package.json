@@ -1,0 +1,29 @@
+{
+  "name": "@freed/prompt",
+  "version": "0.1.0",
+  "description": "Layered prompt runtime for Freed",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@freed/shared": "workspace:*",
+    "@freed/skills": "workspace:*"
+  },
+  "devDependencies": {
+    "tsup": "^8.3.0",
+    "vitest": "^2.1.0",
+    "@vitest/coverage-v8": "^2.1.0",
+    "@types/node": "^22.0.0"
+  }
+}

@@ -8,75 +8,43 @@ Freed is a terminal-native agentic coding assistant — a CLI tool that runs an 
 
 ## Package Structure
 
+Freed uses a **two-package architecture**:
+
 ```
-apps/cli/              # Main CLI entry point, TUI rendering, slash commands
-packages/runtime/      # AgentRuntime (ReAct loop), ApprovalEngine, Session, SlashCommands
-packages/models/       # ModelRouter (Anthropic, OpenAI, Google, DeepSeek)
-packages/tools/        # ToolRegistry, built-in tools, MCP Gateway
-packages/skills/       # Local Skill loader and registry
-packages/storage/      # MemoryManager (Markdown), AgentsLoader
-packages/shared/       # Types, Zod schemas, FreedError, ErrorCode
+apps/cli/              # @freed/cli — The CLI application (entry point, TUI, slash commands)
+packages/core/         # @freed/core — The engine: AgentRuntime, tools, skills, storage, shared
 ```
 
-### `apps/cli`
+### `@freed/cli` (apps/cli/)
 
 - Entry: `src/bin.ts` → calls `runApp()` from `src/app.ts`
 - REPL loop via Node.js `readline` (not Ink/React — plain terminal)
 - Slash command registry, environment context collection, session management
-- Does NOT own a tool registry — receives one constructed here with built-in tools only (MCP tools loaded from `@freed/tools`)
+- Imports from `@freed/core` only — does not own tool registry or agent logic
 
-### `packages/runtime`
+### `@freed/core` (packages/core/)
 
 - **AgentRuntime**: ReAct loop — builds system prompt, calls AI SDK `streamText`, routes tool calls through `ApprovalEngine`, executes tools, collects results
 - **ApprovalEngine**: Risk-scoring and user-confirmation gate for medium/ask risk tools
 - **Session / Messages**: `createSession`, `appendMessages`, `trimSession`
 - **SlashCommandRegistry**: Built-in commands (`/clear`, `/agents`, `/help`) + extensibility
+- **ModelRouter**: Resolves model strings (`anthropic/claude-sonnet-4-6`) to AI SDK provider instances. Supports: Anthropic, OpenAI, Google, DeepSeek, OpenRouter
+- **ToolRegistry**: `ToolRegistry` singleton pre-loaded with built-in tools (`readFileTool`, `writeFileTool`, `listDirTool`, `shellTool`, `gitStatusTool`, `gitDiffTool`, `gitLogTool`) + MCP Gateway
+- **MCPGateway**: loads MCP servers, exposes tools to registry
+- **SkillLoader + SkillRegistry**: Scans for `SKILL.md` files in `~/.freed/skills/`, `~/.claude/skills/`, `.freed/skills/`
+- **MemoryManager**: Reads/writes Markdown memory files with frontmatter
+- **Shared types**: `ToolDescriptor`, `ToolCall`, `ToolResult`, `RiskLevel`, `Message`, `Session`, `AgentProfile`, `FreedError`, `ErrorCode`
 
-### `packages/models`
+### Design Rationale
 
-- **ModelRouter**: Resolves model strings (`anthropic/claude-sonnet-4-6`) to AI SDK provider instances
-- Supports: Anthropic, OpenAI, Google, DeepSeek, OpenRouter
+**Two packages, not seven.** Each package is independently installable and publishable:
 
-### `packages/tools`
+| Package | What it is | Who uses it |
+|---------|-----------|------------|
+| `@freed/core` | The engine — usable as a library in other Node.js projects | Developers building CLI tools |
+| `@freed/cli` | The terminal app — the end-user experience | End users |
 
-Core exports (`index.ts`):
-- `toolRegistry` — `ToolRegistry` singleton pre-loaded with built-in tools
-- `BUILT_IN_TOOLS` — `readFileTool`, `writeFileTool`, `listDirTool`, `shellTool`, `gitStatusTool`, `gitDiffTool`, `gitLogTool`
-- `MCPGateway` — loads MCP servers, exposes tools to registry
-- `collectEnvContext` — gathers OS, shell, CWD, Node version, Git branch/status
-
-**Built-in tools** (`src/`):
-- `file-tools.ts`: `readFileTool`, `writeFileTool`, `listDirTool`
-- `shell-tool.ts`: `shellTool` + `classifyShellRisk` (marks `rm -rf`, `git reset --hard` as `ask`)
-- `git-tools.ts`: `gitStatusTool`, `gitDiffTool`, `gitLogTool`
-- `tool-registry.ts`: `ToolRegistry` — `register`, `registerMany`, `get`, `has`, `list`, `forAgent`
-- `env-context.ts`: `collectEnvContext`
-
-**MCP extension** (`src/mcp/`):
-- `types.ts`: `MCPServerConfig` (Zod), `MCPConfig` schemas
-- `config-loader.ts`: `loadMCPConfig(projectDir?)` — loads and merges `~/.freed/mcp/servers.json` (global) + `.freed/mcp/servers.json` (project, overrides by server name)
-- `server-impl.ts`: `StdioMCPServer` (`StdioClientTransport`) + `HttpMCPServer` (`StreamableHTTPClientTransport`) behind `MCPServerHandle` interface
-- `tool-adapter.ts`: `adaptMCPTool(serverName, tool, client)` → `AnyToolDefinition` with `mcp__<server>__<name>` prefixed name
-- `mcp-gateway.ts`: `MCPGateway` — orchestrates server lifecycle, per-server error isolation, aggregates all tools
-- `doctor.ts`: `checkMCPServers(projectDir?)` — health-check each configured server
-
-**Test files** (`src/__tests__/`):
-- `mcp-config.test.ts`, `mcp-tool-adapter.test.ts` (both pass)
-
-### `packages/skills`
-
-- `SkillLoader`: Scans `~/.freed/skills/`, `~/.claude/skills/`, `.freed/skills/` for `SKILL.md` files
-- `SkillRegistry`: Registers skills by scope (system/user/project), provides `getForProject(cwd)`
-- Skill format: Markdown with YAML frontmatter (`name`, `description`)
-
-### `packages/storage`
-
-- **MemoryManager**: Reads/writes Markdown memory files with frontmatter (`scope`, `tags`, `updated_at`, `confidence`), builds context summaries for the agent
-- **AgentsLoader**: Loads `agents.md` (global `~/.freed/agents/`, project `.freed/agents/`)
-
-### `packages/shared`
-
-All shared types: `ToolDescriptor`, `ToolCall`, `ToolResult`, `RiskLevel` (`safe | ask | deny`), `Message`, `Session`, `AgentProfile`, `MemoryEntry`, `EnvContext`, `FreedError`, `ErrorCode`. Schemas via Zod.
+**Why not more packages?** Separating `runtime`, `models`, `tools`, `skills`, `storage`, `shared` into individual packages creates maintenance overhead (7x API surfaces, 7x release workflows) without meaningful benefit for a solo developer or typical users. The module boundaries remain clear and importable from `@freed/core` if needed.
 
 ---
 
@@ -194,6 +162,49 @@ All errors wrapped in `FreedError` with typed `ErrorCode`:
 - `TOOL_NOT_FOUND`, `TOOL_EXECUTION_FAILED`, `APPROVAL_DENIED`
 - `MODEL_ERROR`, `MEMORY_READ_ERROR`, `MEMORY_WRITE_ERROR`
 - `CONFIG_INVALID`, `AGENT_NOT_FOUND`
+
+---
+
+## Future Work: Rust Core Refactoring
+
+The two-package architecture is designed to enable a future Rust-based engine without disrupting the CLI or users.
+
+### The Goal
+
+Replace the performance-critical parts of `@freed/core` (ReAct loop, tool execution) with a Rust implementation, while keeping `@freed/cli` unchanged and maintaining API compatibility.
+
+### Why It's Feasible
+
+The clean boundary between `@freed/cli` and `@freed/core` means the Rust refactor is an *internal implementation detail* of `@freed/core`. As long as `@freed/core`'s public interface stays the same, the CLI (and any downstream consumers) don't need to change.
+
+### Three Realistic Refactoring Paths
+
+| Approach | How it works | Trade-off |
+|----------|-------------|-----------|
+| **Rust binary + stdio bridge** | Rust subprocess, JSON over stdio | Stable, low latency, simple |
+| **Rust core + HTTP daemon** | Local HTTP/gRPC service called by TypeScript | Adds latency, needs lifecycle management |
+| **Rust → WebAssembly** | Compile Rust to WASM, load in Node.js | Harder WASM interop, ecosystem still maturing |
+
+### What Makes It Easy
+
+- The package boundary (`@freed/core` interface) is already clean
+- AgentRuntime, ToolRegistry, ApprovalEngine are well-isolated
+- No changes needed to `@freed/cli` or user-facing behavior
+
+### What Makes It Hard
+
+- **The interface boundary itself** — the internal message protocol between components becomes a critical API you can't break once Rust is in the picture
+- **Debugging culture** — Rust panics vs. JS stack traces
+- **Iteration speed** — TypeScript's fast HMR vs. Rust compile times
+- **Tooling shift** — vitest → Rust's test frameworks, tsup → Cargo
+
+### Prerequisite
+
+Before attempting a Rust refactor: define and document a **stable internal interface** (the message protocol between the ReAct loop and tool executor). Treat it like a public API. Once that's locked down, swapping the engine behind it is a clean rewrite.
+
+### References
+
+- Roadmap item: *"Architecture decoupling: high-performance Rust engine + TypeScript agentic logic via gRPC/HTTP"*
 
 ---
 

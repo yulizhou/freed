@@ -42,7 +42,8 @@ Freed is more than just a terminal chatbot or another CLI tool just like CC or C
 - [ ] Token Budgeting: Safety breakers to prevent unexpected API costs.
 
 ## 6. Architecture & Performance
-- [ ] Architecture decoupling: refactor the architecture into two layers, a high-performance Rust-based engine and flexible TypeScript layer for agentic logic while communicating via gRPC/HTTP.
+- [x] Two-package architecture: `@freed/core` (engine) + `@freed/cli` (app)
+- [ ] Rust core refactoring: Replace the ReAct loop and tool execution engine with a Rust implementation for better performance, while keeping the TypeScript layer unchanged. See [architeture.md](./architeture.md) for the three refactoring paths.
 - [ ] Performance Telemetry: Instrumentation for evaluation and execution efficiency analysis.
 
 ## 7. Layered Prompt Architecture
@@ -52,6 +53,19 @@ Freed is more than just a terminal chatbot or another CLI tool just like CC or C
 - [x] Attachment Layer: Per-turn dynamic info via `system-reminder` protocol.
 - [x] Transport Layer: API block splitting with `cacheScope` metadata.
 - [x] Skill Templates: Parameterized skill prompts with argument substitution.
+
+## Use as a Library
+
+`@freed/core` is designed to be usable as a building block for your own CLI tools:
+
+```typescript
+import { AgentRuntime, ToolRegistry } from '@freed/core'
+
+const runtime = new AgentRuntime({ model: 'anthropic/claude-sonnet-4-6' })
+const result = await runtime.run('Your prompt here')
+```
+
+See [architeture.md](./architeture.md) for the full module breakdown.
 
 # Licensing
 Distributed under the [MIT License](https://www.google.com/search?q=LICENSE).

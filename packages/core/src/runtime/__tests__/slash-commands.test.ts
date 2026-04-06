@@ -56,27 +56,44 @@ describe('SlashCommandRegistry', () => {
 describe('createBuiltinCommands', () => {
   it('/clear should call onClear callback', async () => {
     const onClear = vi.fn();
-    const registry = createBuiltinCommands(onClear);
+    const onQuit = vi.fn();
+    const registry = createBuiltinCommands(onClear, onQuit);
     await registry.execute('clear', [], mockCtx);
     expect(onClear).toHaveBeenCalledOnce();
   });
 
+  it('/quit should call onQuit callback', async () => {
+    const onClear = vi.fn();
+    const onQuit = vi.fn();
+    const registry = createBuiltinCommands(onClear, onQuit);
+    await registry.execute('quit', [], mockCtx);
+    expect(onQuit).toHaveBeenCalledOnce();
+  });
+
+  it('/exit should call onQuit callback', async () => {
+    const onClear = vi.fn();
+    const onQuit = vi.fn();
+    const registry = createBuiltinCommands(onClear, onQuit);
+    await registry.execute('exit', [], mockCtx);
+    expect(onQuit).toHaveBeenCalledOnce();
+  });
+
   it('/tools should list agent tools', async () => {
-    const registry = createBuiltinCommands(() => void 0);
+    const registry = createBuiltinCommands(() => void 0, () => void 0);
     const result = await registry.execute('tools', [], mockCtx);
     expect(result).toContain('shell');
     expect(result).toContain('read_file');
   });
 
   it('/bug should mention changed files count', async () => {
-    const registry = createBuiltinCommands(() => void 0);
+    const registry = createBuiltinCommands(() => void 0, () => void 0);
     const result = await registry.execute('bug', [], mockCtx);
     expect(result).toContain('2 changed file(s)');
   });
 
   it('/agents should require an argument', async () => {
     const onAgentSwitch = vi.fn().mockResolvedValue('Switched!');
-    const registry = createBuiltinCommands(() => void 0, onAgentSwitch);
+    const registry = createBuiltinCommands(() => void 0, () => void 0, onAgentSwitch);
     const noArgResult = await registry.execute('agents', [], mockCtx);
     expect(noArgResult).toContain('Usage');
     expect(onAgentSwitch).not.toHaveBeenCalled();
@@ -84,7 +101,7 @@ describe('createBuiltinCommands', () => {
 
   it('/agents should call onAgentSwitch with the agent id', async () => {
     const onAgentSwitch = vi.fn().mockResolvedValue('Switched to reviewer');
-    const registry = createBuiltinCommands(() => void 0, onAgentSwitch);
+    const registry = createBuiltinCommands(() => void 0, () => void 0, onAgentSwitch);
     const result = await registry.execute('agents', ['reviewer'], mockCtx);
     expect(onAgentSwitch).toHaveBeenCalledWith('reviewer');
     expect(result).toBe('Switched to reviewer');

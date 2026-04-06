@@ -51,7 +51,7 @@ describe('Skill integration', () => {
       });
 
       const registry = await import('../slash-commands.js');
-      const cmdRegistry = registry.createBuiltinCommands(() => {});
+      const cmdRegistry = registry.createBuiltinCommands(() => {}, () => void 0);
 
       const result = await cmdRegistry.execute('skills', [], {
         session: { messages: [] },
@@ -69,7 +69,7 @@ describe('Skill integration', () => {
       mockSkillRegistry.listNames.mockReturnValue([]);
 
       const registry = await import('../slash-commands.js');
-      const cmdRegistry = registry.createBuiltinCommands(() => {});
+      const cmdRegistry = registry.createBuiltinCommands(() => {}, () => void 0);
 
       const result = await cmdRegistry.execute('skills', [], {
         session: { messages: [] },
@@ -90,7 +90,7 @@ describe('Skill integration', () => {
       });
 
       const registry = await import('../slash-commands.js');
-      const cmdRegistry = registry.createBuiltinCommands(() => {});
+      const cmdRegistry = registry.createBuiltinCommands(() => {}, () => void 0);
 
       const result = await cmdRegistry.execute('skill', ['my-skill'], {
         session: { messages: [] },
@@ -106,7 +106,7 @@ describe('Skill integration', () => {
       mockSkillRegistry.getByName.mockReturnValue(undefined);
 
       const registry = await import('../slash-commands.js');
-      const cmdRegistry = registry.createBuiltinCommands(() => {});
+      const cmdRegistry = registry.createBuiltinCommands(() => {}, () => void 0);
 
       const result = await cmdRegistry.execute('skill', ['unknown'], {
         session: { messages: [] },
@@ -119,7 +119,7 @@ describe('Skill integration', () => {
 
     it('should return usage when name not provided', async () => {
       const registry = await import('../slash-commands.js');
-      const cmdRegistry = registry.createBuiltinCommands(() => {});
+      const cmdRegistry = registry.createBuiltinCommands(() => {}, () => void 0);
 
       const result = await cmdRegistry.execute('skill', [], {
         session: { messages: [] },
@@ -134,7 +134,7 @@ describe('Skill integration', () => {
   describe('/reload-skills slash command', () => {
     it('should reload the skill registry', async () => {
       const registry = await import('../slash-commands.js');
-      const cmdRegistry = registry.createBuiltinCommands(() => {});
+      const cmdRegistry = registry.createBuiltinCommands(() => {}, () => void 0);
 
       const result = await cmdRegistry.execute('reload-skills', [], {
         session: { messages: [] },

@@ -39,6 +39,7 @@ export class SlashCommandRegistry {
  */
 export function createBuiltinCommands(
   onClear: () => void,
+  onQuit: () => void,
   onAgentSwitch?: (agentId: string) => Promise<string>,
 ): SlashCommandRegistry {
   const registry = new SlashCommandRegistry();
@@ -46,6 +47,16 @@ export function createBuiltinCommands(
   registry.register('clear', 'Clear the current session context', async (_args, _ctx) => {
     onClear();
     return 'Session context cleared.';
+  });
+
+  registry.register('quit', 'Exit the session', async () => {
+    onQuit();
+    return 'Goodbye!';
+  });
+
+  registry.register('exit', 'Exit the session', async () => {
+    onQuit();
+    return 'Goodbye!';
   });
 
   registry.register(

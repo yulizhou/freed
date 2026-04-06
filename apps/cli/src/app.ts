@@ -137,6 +137,10 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
       session = createSession(currentAgent);
       console.log(formatSuccess('Session cleared.'));
     },
+    () => {
+      console.log(formatSuccess('Goodbye!\n'));
+      process.exit(0);
+    },
     async (agentId) => {
       const found = agentProfiles.find((a) => a.id === agentId);
       if (!found) {

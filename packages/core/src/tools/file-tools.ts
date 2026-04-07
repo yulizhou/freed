@@ -2,37 +2,141 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import type { AnyToolDefinition } from './types.js';
 
+// Device files that would hang if read
+const BLOCKED_DEVICE_PATHS = new Set(['/dev/zero', '/dev/null', '/dev/urandom']);
+
 export const readFileTool: AnyToolDefinition = {
   name: 'read_file',
-  description: 'Read the contents of a file at the given path.',
+  description:
+    'Read the contents of a file at the given path. Supports line range selection with offset and limit parameters.',
   riskLevel: 'safe',
   inputSchema: {
     type: 'object',
     properties: {
       path: { type: 'string', description: 'Absolute or relative path to the file.' },
-      startLine: { type: 'number', description: 'Optional 1-based start line.' },
-      endLine: { type: 'number', description: 'Optional 1-based end line (inclusive).' },
+      offset: {
+        type: 'number',
+        optional: true,
+        description: 'Number of lines to skip before reading. Default: 0.',
+      },
+      limit: {
+        type: 'number',
+        optional: true,
+        description: 'Maximum number of lines to read. Default: unlimited.',
+      },
+      '-n': {
+        type: 'boolean',
+        optional: true,
+        description: 'Show line numbers in output.',
+      },
     },
     required: ['path'],
   },
-  async execute(input) {
-    const { path: filePath, startLine, endLine } = input as {
+  async execute(input, cwd = process.cwd()) {
+    const { path: filePath, offset = 0, limit, '-n': showLineNumbers } = input as {
       path: string;
-      startLine?: number;
-      endLine?: number;
+      offset?: number;
+      limit?: number;
+      '-n'?: boolean;
     };
 
+    // Resolve relative paths
+    const absolutePath = path.isAbsolute(filePath)
+      ? filePath
+      : path.resolve(cwd, filePath);
+
+    // Security: block device files that could hang
+    if (BLOCKED_DEVICE_PATHS.has(absolutePath)) {
+      return {
+        success: false,
+        output: '',
+        error: 'Cannot read device files.',
+      };
+    }
+
+    // Validate parameters
+    if (offset < 0) {
+      return {
+        success: false,
+        output: '',
+        error: 'offset must be non-negative.',
+      };
+    }
+
+    if (limit !== undefined && limit < 0) {
+      return {
+        success: false,
+        output: '',
+        error: 'limit must be non-negative.',
+      };
+    }
+
     try {
-      const content = await fs.readFile(filePath, 'utf-8');
-      if (startLine !== undefined || endLine !== undefined) {
-        const lines = content.split('\n');
-        const start = (startLine ?? 1) - 1;
-        const end = endLine ?? lines.length;
-        return { success: true, output: lines.slice(start, end).join('\n') };
+      const stat = await fs.stat(absolutePath);
+
+      // Check if it's a directory
+      if (stat.isDirectory()) {
+        return {
+          success: false,
+          output: '',
+          error: 'Path is a directory, not a file.',
+        };
       }
-      return { success: true, output: content };
+
+      // Read file content
+      const content = await fs.readFile(absolutePath, 'utf-8');
+      const allLines = content.split('\n');
+
+      // Apply offset and limit
+      const startLine = offset;
+      const endLine = limit !== undefined ? offset + limit : allLines.length;
+      const selectedLines = allLines.slice(startLine, endLine);
+
+      // Format output
+      let output: string;
+      if (showLineNumbers) {
+        output = selectedLines
+          .map((line, i) => `${startLine + i + 1}: ${line}`)
+          .join('\n');
+      } else {
+        output = selectedLines.join('\n');
+      }
+
+      // Add metadata if truncated
+      const totalLines = allLines.length;
+      if (endLine < totalLines) {
+        output += `\n... (showing ${endLine - startLine} of ${totalLines} lines, offset ${offset})`;
+      }
+
+      return { success: true, output };
     } catch (err) {
-      return { success: false, output: '', error: String(err) };
+      const error = err as NodeJS.ErrnoException;
+      if (error.code === 'ENOENT') {
+        return {
+          success: false,
+          output: '',
+          error: `File not found: ${filePath}`,
+        };
+      }
+      if (error.code === 'EACCES') {
+        return {
+          success: false,
+          output: '',
+          error: `Permission denied: ${filePath}`,
+        };
+      }
+      if (error.code === 'EISDIR') {
+        return {
+          success: false,
+          output: '',
+          error: `Path is a directory: ${filePath}`,
+        };
+      }
+      return {
+        success: false,
+        output: '',
+        error: `Read error: ${error.message}`,
+      };
     }
   },
 };

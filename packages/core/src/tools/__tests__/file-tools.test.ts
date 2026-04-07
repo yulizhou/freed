@@ -24,16 +24,48 @@ describe('readFileTool', () => {
     expect(result.output).toBe('line1\nline2\nline3\nline4\nline5');
   });
 
-  it('should read a line range', async () => {
-    const result = await readFileTool.execute({ path: testFile, startLine: 2, endLine: 3 });
+  it('should read with offset', async () => {
+    const result = await readFileTool.execute({ path: testFile, offset: 1 });
     expect(result.success).toBe(true);
-    expect(result.output).toBe('line2\nline3');
+    expect(result.output).toBe('line2\nline3\nline4\nline5');
+  });
+
+  it('should read with offset and limit', async () => {
+    const result = await readFileTool.execute({ path: testFile, offset: 1, limit: 2 });
+    expect(result.success).toBe(true);
+    expect(result.output).toContain('line2\nline3');
+    expect(result.output).toContain('showing 2 of 5 lines');
+  });
+
+  it('should show line numbers with -n flag', async () => {
+    const result = await readFileTool.execute({ path: testFile, '-n': true });
+    expect(result.success).toBe(true);
+    expect(result.output).toContain('1: line1');
+    expect(result.output).toContain('3: line3');
+  });
+
+  it('should include truncation info when limited', async () => {
+    const result = await readFileTool.execute({ path: testFile, offset: 0, limit: 2 });
+    expect(result.success).toBe(true);
+    expect(result.output).toContain('showing 2 of 5 lines');
   });
 
   it('should return error for non-existent file', async () => {
     const result = await readFileTool.execute({ path: '/nonexistent/file.txt' });
     expect(result.success).toBe(false);
-    expect(result.error).toBeTruthy();
+    expect(result.error).toContain('File not found');
+  });
+
+  it('should return error for directory path', async () => {
+    const result = await readFileTool.execute({ path: tmpDir });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('directory');
+  });
+
+  it('should reject negative offset', async () => {
+    const result = await readFileTool.execute({ path: testFile, offset: -1 });
+    expect(result.success).toBe(false);
+    expect(result.error).toContain('non-negative');
   });
 });
 

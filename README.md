@@ -116,8 +116,13 @@ pnpm build
 After building, link the CLI globally so you can run `freed` from anywhere:
 
 ```bash
-# Link the CLI globally
+# Link the CLI globally — two ways:
+
+# Option 1: From the project root (requires --filter)
 pnpm --filter @freed/cli link
+
+# Option 2: From the cli package directory (no filter needed)
+cd apps/cli && pnpm link --global
 ```
 
 Now you can run `freed` from any terminal:

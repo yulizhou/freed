@@ -16,6 +16,7 @@
 | TUI 可视化仪表盘 | ⬜ | — |
 | 多行输入 | ✅ | `apps/cli/src/app.ts` — `Shift+Enter` 添加新行，`Enter` 提交；`Ctrl+C` 清空当前输入 |
 | 进度提示 Spinner | ✅ | `apps/cli/src/renderer.ts` — `SpinnerManager`（`ora`）；工具执行和 AI 思考期间显示 spinner，300ms 宽限期防闪烁 |
+| 工具进程信息显隐 | ✅ | `apps/cli/src/app.ts` — `Ctrl+O` 切换 spinner 显示/隐藏，默认隐藏 |
 
 ---
 

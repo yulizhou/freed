@@ -217,6 +217,9 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
         resolve(null);
       });
 
+      // Emit keypress events BEFORE enabling raw mode — required for Ctrl+O etc.
+      readline.emitKeypressEvents(process.stdin);
+
       // Enable raw mode for keypress detection
       const prevRaw = process.stdin.isRaw;
       if (process.stdin.isTTY && !process.stdin.isRaw) {
@@ -254,20 +257,11 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
             }
           }
         } else if (key.name === 'c' && key.ctrl) {
-          // Ctrl+C
+          // Ctrl+C: exit immediately
           cleanup();
           process.stdin.setRawMode?.(prevRaw ?? false);
-          currentLine = '';
-          lineBuffer.length = 0;
-          isMultiLine = false;
           process.stdout.write('^C\n');
-          showPrompt();
-          // Re-register to continue reading
-          rl.once('line', (line) => {
-            cleanup();
-            process.stdin.setRawMode?.(prevRaw ?? false);
-            resolve(line || null);
-          });
+          process.exit(0);
         } else if (key.name === 'backspace' && currentLine.length === 0 && lineBuffer.length > 0) {
           // Backspace on empty line: remove last buffer line
           const last = lineBuffer.pop();
@@ -279,6 +273,13 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
             process.stdout.write(isMultiLine ? CONTINUATION_PROMPT : chalk.cyan('> '));
             process.stdout.write(currentLine);
           }
+        } else if (key.name === 'o' && key.ctrl) {
+          // Ctrl+O: toggle tool process info (spinners)
+          showToolProcessInfo = !showToolProcessInfo;
+          process.stdout.write(
+            `\n${chalk.dim(`Tool process info: ${showToolProcessInfo ? 'ON' : 'OFF'}`)}\n`,
+          );
+          showPrompt();
         } else if (str) {
           currentLine += str;
         }
@@ -297,6 +298,9 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
     console.log(formatInfo(`Git: ${envContext.gitBranch}`));
   }
   console.log('');
+
+  // Tool process info toggle (Ctrl+O) — default: hidden
+  let showToolProcessInfo = false;
 
   // Main REPL loop
   // eslint-disable-next-line no-constant-condition
@@ -350,9 +354,11 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
           break;
 
         case 'tool_result':
-          process.stdout.write(
-            formatToolResult(chunk.toolName ?? '', chunk.toolResult ?? '') + '\n',
-          );
+          if (showToolProcessInfo) {
+            process.stdout.write(
+              formatToolResult(chunk.toolName ?? '', chunk.toolResult ?? '') + '\n',
+            );
+          }
           break;
 
         case 'approval_denied':
@@ -368,14 +374,18 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
           break;
 
         case 'spinner_start':
-          spinnerManager.startSpinner(chunk.label ?? '');
+          if (showToolProcessInfo) {
+            spinnerManager.startSpinner(chunk.label ?? '');
+          }
           break;
 
         case 'spinner_stop':
-          if (chunk.success) {
-            spinnerManager.stopSpinnerWithSuccess(chunk.label ?? '', chunk.message);
-          } else {
-            spinnerManager.stopSpinnerWithError(chunk.label ?? '', chunk.message);
+          if (showToolProcessInfo) {
+            if (chunk.success) {
+              spinnerManager.stopSpinnerWithSuccess(chunk.label ?? '', chunk.message);
+            } else {
+              spinnerManager.stopSpinnerWithError(chunk.label ?? '', chunk.message);
+            }
           }
           break;
 

@@ -1,6 +1,31 @@
 import { streamText, tool as aiTool } from 'ai';
 import type { ToolSet } from 'ai';
 import { z } from 'zod';
+
+/** Convert a basic JSON Schema input definition to a Zod schema for AI SDK tool validation. */
+function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodType<unknown> {
+  if (!schema || typeof schema !== 'object' || Object.keys(schema).length === 0) {
+    return z.object({});
+  }
+  const s = schema as { type?: string; properties?: Record<string, unknown>; required?: string[] };
+  const shape: Record<string, z.ZodType<unknown>> = {};
+  if (s.properties) {
+    for (const [key, prop] of Object.entries(s.properties)) {
+      const p = prop as { type?: string; description?: string; optional?: boolean };
+      let field: z.ZodType<unknown>;
+      switch (p.type) {
+        case 'string':  field = z.string().optional(); break;
+        case 'number':  field = z.number().optional(); break;
+        case 'boolean': field = z.boolean().optional(); break;
+        case 'object':  field = jsonSchemaToZod((p as {type?: string; properties?: Record<string, unknown>}).properties ?? {}).optional(); break;
+        case 'array':   field = z.array(z.unknown()).optional(); break;
+        default:        field = z.unknown().optional();
+      }
+      shape[key] = field;
+    }
+  }
+  return z.object(shape);
+}
 import { nanoid } from 'nanoid';
 import { EventEmitter } from 'eventemitter3';
 import type { AgentProfile, Message, Session, EnvContext } from '../shared/index.js';
@@ -143,17 +168,18 @@ export class AgentRuntime extends EventEmitter {
       const toolDef_ = toolDef;
       aiTools[toolDef_.name] = aiTool({
         description: toolDef_.description,
-        parameters: z.object({}),
-        execute: async (rawInput: Record<string, unknown>): Promise<string> => {
-          const toolCall = { id: nanoid(), name: toolDef_.name, input: rawInput };
+        parameters: jsonSchemaToZod(toolDef_.inputSchema as Record<string, unknown>),
+        execute: async (rawInput: unknown): Promise<string> => {
+          const input = rawInput as Record<string, unknown>;
+          const toolCall = { id: nanoid(), name: toolDef_.name, input };
 
           // Determine actual risk (shell commands get re-evaluated)
           let riskLevel = toolDef_.riskLevel;
-          if (toolDef_.name === 'shell' && typeof rawInput['command'] === 'string') {
-            riskLevel = classifyShellRisk(rawInput['command'] as string);
+          if (toolDef_.name === 'shell' && typeof input['command'] === 'string') {
+            riskLevel = classifyShellRisk(input['command'] as string);
           }
 
-          onChunk({ type: 'tool_call', toolName: toolDef_.name, toolInput: rawInput });
+          onChunk({ type: 'tool_call', toolName: toolDef_.name, toolInput: input });
 
           onChunk({ type: 'spinner_start', label: 'Running tool...' });
 
@@ -165,7 +191,7 @@ export class AgentRuntime extends EventEmitter {
 
           onChunk({ type: 'approval_request' });
 
-          const result = await toolDef_.execute(rawInput);
+          const result = await toolDef_.execute(input);
           const output = result.success ? result.output : `Error: ${result.error ?? 'unknown'}`;
           onChunk({ type: 'tool_result', toolName: toolDef_.name, toolResult: output });
           onChunk({ type: 'spinner_stop', label: 'Running tool...', success: result.success });

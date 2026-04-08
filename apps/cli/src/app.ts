@@ -17,7 +17,6 @@ import {
 import type { StreamChunk } from '@freed/core';
 import { askConfirmation } from './prompt.js';
 import {
-  renderMarkdown,
   formatUserMessage,
   formatAssistantPrefix,
   formatToolCall,
@@ -350,7 +349,9 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
         case 'tool_call':
           pendingApprovalTool = chunk.toolName ?? null;
           pendingApprovalInput = chunk.toolInput;
-          process.stdout.write('\n' + formatToolCall(chunk.toolName ?? '', chunk.toolInput));
+          if (showToolProcessInfo) {
+            process.stdout.write('\n' + formatToolCall(chunk.toolName ?? '', chunk.toolInput));
+          }
           break;
 
         case 'tool_result':
@@ -374,8 +375,9 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
           break;
 
         case 'spinner_start':
-          if (showToolProcessInfo) {
-            spinnerManager.startSpinner(chunk.label ?? '');
+          spinnerManager.startSpinner(chunk.label ?? '');
+          if (!showToolProcessInfo) {
+            spinnerManager.stopSpinner(chunk.label ?? '');
           }
           break;
 
@@ -386,6 +388,8 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
             } else {
               spinnerManager.stopSpinnerWithError(chunk.label ?? '', chunk.message);
             }
+          } else {
+            spinnerManager.stopSpinner(chunk.label ?? '');
           }
           break;
 

@@ -169,16 +169,16 @@ apps/cli/src/
   app.ts              # runApp() — REPL 循环
 
 packages/
-  runtime/src/
+  core/src/runtime/
     agent-runtime.ts  # ReAct 执行循环
     approval-engine.ts # 审批引擎
     session.ts        # Session 管理
     slash-commands.ts # Slash 命令注册
 
-  models/src/
+  core/src/models/
     model-router.ts   # 多模型路由（架构完成，切换逻辑未实现）
 
-  tools/src/
+  core/src/tools/
     tool-registry.ts  # 工具注册表
     file-tools.ts      # 文件读写工具
     shell-tool.ts      # Shell 执行工具（含风险分类）
@@ -195,15 +195,15 @@ packages/
       mcp-config.test.ts
       mcp-tool-adapter.test.ts
 
-  skills/src/
+  core/src/skills/
     skill-loader.ts    # 扫描 Skill 目录
     skill-registry.ts   # Skill 注册表
 
-  storage/src/
+  core/src/storage/
     memory-manager.ts   # Markdown 记忆读写
     agents-loader.ts    # agents.md 加载
 
-  shared/src/
+  core/src/shared/
     types.ts            # 所有共享类型 + Zod schemas + FreedError
 ```
 

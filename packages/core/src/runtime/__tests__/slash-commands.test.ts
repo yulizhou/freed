@@ -106,4 +106,18 @@ describe('createBuiltinCommands', () => {
     expect(onAgentSwitch).toHaveBeenCalledWith('reviewer');
     expect(result).toBe('Switched to reviewer');
   });
+
+  it('/model should call onModelSwitch with the model id', async () => {
+    const onModelSwitch = vi.fn().mockResolvedValue('Model switched to: openai/gpt-4');
+    const registry = createBuiltinCommands(() => void 0, () => void 0, undefined, onModelSwitch);
+    const result = await registry.execute('model', ['openai/gpt-4'], mockCtx);
+    expect(onModelSwitch).toHaveBeenCalledWith('openai/gpt-4');
+    expect(result).toBe('Model switched to: openai/gpt-4');
+  });
+
+  it('/model without arg should return usage', async () => {
+    const registry = createBuiltinCommands(() => void 0, () => void 0, undefined, vi.fn());
+    const result = await registry.execute('model', [], mockCtx);
+    expect(result).toContain('Usage');
+  });
 });

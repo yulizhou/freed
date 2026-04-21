@@ -6,7 +6,7 @@ import { loadSkillsFromDir } from '@freed/core';
 import { skillRegistry } from '@freed/core';
 import { ToolRegistry, BUILT_IN_TOOLS, collectEnvContext } from '@freed/core';
 import { MemoryManager, AgentsLoader } from '@freed/core';
-import { ModelRouter } from '@freed/core';
+import { ModelRouter, MCPGateway } from '@freed/core';
 import {
   AgentRuntime,
   ApprovalEngine,
@@ -79,8 +79,15 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
       path.join(homeDir, '.claude/skills'),
       'user',
     ).catch(() => []);
-    // Project skills are loaded lazily via /reload-skills; count as 0 at startup
-    const projectSkills: typeof systemSkills = [];
+    // Project skills (lowest priority — scopePriority: project=3, user=2, system=1)
+    // Project skills are .freed/skills/ (per arch.md line 134)
+    const projectSkillsRoot = path.join(projectRoot, '.freed/skills');
+    let projectSkills: typeof systemSkills = [];
+    try {
+      projectSkills = await loadSkillsFromDir(projectSkillsRoot, 'project').catch(() => []);
+    } catch {
+      // ignore
+    }
 
     const systemCount = systemSkills.length;
     const userCount = userSkills.length;
@@ -92,6 +99,10 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
     }
     if (userSkills.length > 0) {
       skillRegistry.register('user', userSkills, path.join(homeDir, '.claude/skills'));
+    }
+    if (projectSkills.length > 0) {
+      skillRegistry.register('project', projectSkills, projectSkillsRoot);
+      console.info(`Loaded ${projectSkills.length} project skills`);
     }
 
     if (total > 0) {
@@ -122,6 +133,18 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
   let currentAgent: AgentProfile =
     agentProfiles.find((a) => a.id === currentAgentId) ?? agentProfiles[0]!;
 
+  // ── MCP Gateway (project-level MCP servers) ─────────────────────────────────
+  let mcpGateway: MCPGateway;
+  try {
+    mcpGateway = new MCPGateway(toolRegistry);
+    await mcpGateway.loadGlobal();
+    await mcpGateway.loadProject(projectRoot);
+    const mcpTools = mcpGateway.getAllTools();
+    toolRegistry.registerMany(mcpTools);
+  } catch (err) {
+    console.warn('Failed to initialize MCP gateway:', err instanceof Error ? err.message : err);
+  }
+
   const runtime = new AgentRuntime({
     modelRouter,
     toolRegistry,
@@ -140,6 +163,7 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
     },
     () => {
       console.log(formatSuccess('Goodbye!\n'));
+      mcpGateway?.close();
       process.exit(0);
     },
     async (agentId) => {
@@ -152,6 +176,10 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
       currentAgentId = agentId;
       session = createSession(currentAgent);
       return `Switched to agent: ${currentAgent.name} (${currentAgent.model})`;
+    },
+    async (modelId) => {
+      currentAgent = { ...currentAgent, model: modelId };
+      return `Model switched to: ${modelId}`;
     },
   );
 

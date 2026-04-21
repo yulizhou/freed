@@ -1,5 +1,6 @@
 import type { AgentProfile, EnvContext } from '../shared/index.js';
 import { skillRegistry } from './skill-registry.js';
+import { ModelRouter } from '../models/index.js';
 
 export type SlashCommandHandler = (
   args: string[],
@@ -41,6 +42,7 @@ export function createBuiltinCommands(
   onClear: () => void,
   onQuit: () => void,
   onAgentSwitch?: (agentId: string) => Promise<string>,
+  onModelSwitch?: (modelId: string) => Promise<string>,
 ): SlashCommandRegistry {
   const registry = new SlashCommandRegistry();
 
@@ -91,6 +93,23 @@ export function createBuiltinCommands(
       if (!agentId) return 'Usage: /agents <agent-id>';
       return onAgentSwitch(agentId);
     });
+  }
+
+  if (onModelSwitch) {
+    registry.register(
+      'model',
+      'Switch model (usage: /model <provider/model>)',
+      async (args, _ctx) => {
+        const modelId = args[0];
+        if (!modelId) {
+          return 'Usage: /model <provider/model>\nSupported: anthropic/, openai/, google/, deepseek/, openrouter/';
+        }
+        if (!ModelRouter.isValidModelId(modelId)) {
+          return `Invalid model ID format. Expected: <provider>/<model>\nSupported: anthropic/, openai/, google/, deepseek/, openrouter/`;
+        }
+        return onModelSwitch(modelId);
+      },
+    );
   }
 
   registry.register('skills', 'List available skills', async (_args, _ctx) => {

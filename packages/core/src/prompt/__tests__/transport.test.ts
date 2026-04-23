@@ -41,17 +41,17 @@ describe('splitSysPromptPrefix', () => {
     const prompt = ['all dynamic content', 'more content']
     const result = splitSysPromptPrefix(prompt)
     expect(result).toHaveLength(1)
-    expect(result[0].cacheScope).toBeNull()
-    expect(result[0].content).toContain('all dynamic content')
+    expect(result[0]!.cacheScope).toBeNull()
+    expect(result[0]!.content).toContain('all dynamic content')
   })
 
   it('skipGlobalCache=true returns single block with cacheScope=null', () => {
     const prompt = ['static', SYSTEM_PROMPT_DYNAMIC_BOUNDARY, 'dynamic']
     const result = splitSysPromptPrefix(prompt, { skipGlobalCacheForSystemPrompt: true })
     expect(result).toHaveLength(1)
-    expect(result[0].cacheScope).toBeNull()
-    expect(result[0].content).toContain('static')
-    expect(result[0].content).toContain('dynamic')
+    expect(result[0]!.cacheScope).toBeNull()
+    expect(result[0]!.content).toContain('static')
+    expect(result[0]!.content).toContain('dynamic')
   })
 
   it('static block is null when all content is after boundary', () => {
@@ -69,7 +69,7 @@ describe('splitSysPromptPrefix', () => {
     const result = splitSysPromptPrefix(prompt)
     // No boundary, so all content gets cacheScope=null as a single block
     expect(result).toHaveLength(1)
-    expect(result[0].cacheScope).toBeNull()
+    expect(result[0]!.cacheScope).toBeNull()
   })
 
   it('handles prompt with only boundary marker', () => {

@@ -35,10 +35,7 @@ describe('getUserContext', () => {
 
   it('handles missing projectName gracefully', async () => {
     const date = new Date()
-    const result = await getUserContext({
-      projectName: undefined,
-      sessionStartDate: date,
-    })
+    const result = await getUserContext({ sessionStartDate: date })
     expect(result).not.toHaveProperty('project')
   })
 })
@@ -58,7 +55,7 @@ describe('getSystemContext', () => {
   })
 
   it('omits git_branch when not provided', () => {
-    const result = getSystemContext({ gitBranch: undefined })
+    const result = getSystemContext({})
     expect(result).not.toHaveProperty('git_branch')
   })
 
@@ -69,7 +66,7 @@ describe('getSystemContext', () => {
   })
 
   it('omits git_status when not provided', () => {
-    const result = getSystemContext({ gitStatus: undefined })
+    const result = getSystemContext({})
     expect(result).not.toHaveProperty('git_status')
   })
 
@@ -80,7 +77,7 @@ describe('getSystemContext', () => {
   })
 
   it('omits cache_breaker when not provided', () => {
-    const result = getSystemContext({ promptHash: undefined })
+    const result = getSystemContext({})
     expect(result).not.toHaveProperty('cache_breaker')
   })
 

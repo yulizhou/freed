@@ -39,8 +39,8 @@ describe('wrapMessagesInSystemReminder', () => {
       },
     ]
     const result = wrapMessagesInSystemReminder(messages)
-    expect(result[0].message.content).toContain('<system-reminder>')
-    expect(result[0].message.content).toContain('remember to check the logs')
+    expect(result[0]!.message.content).toContain('<system-reminder>')
+    expect(result[0]!.message.content).toContain('remember to check the logs')
   })
 
   it('leaves non-string content unchanged', () => {
@@ -52,7 +52,7 @@ describe('wrapMessagesInSystemReminder', () => {
       },
     ]
     const result = wrapMessagesInSystemReminder(messages)
-    expect(result[0].message.content).toEqual({ nested: 'object' })
+    expect(result[0]!.message.content).toEqual({ nested: 'object' })
   })
 
   it('returns a new array with mapped messages', () => {
@@ -78,8 +78,8 @@ describe('buildSkillDiscoveryAttachment', () => {
     const skills = [{ name: 'my-skill', description: 'Does things' }]
     const result = buildSkillDiscoveryAttachment(skills)
     expect(result).toHaveLength(1)
-    expect(result[0].role).toBe('user')
-    expect(result[0].isMeta).toBe(true)
+    expect(result[0]!.role).toBe('user')
+    expect(result[0]!.isMeta).toBe(true)
   })
 
   it('message content includes skill names and descriptions', () => {
@@ -88,15 +88,15 @@ describe('buildSkillDiscoveryAttachment', () => {
       { name: 'skill-b', description: 'Description B' },
     ]
     const result = buildSkillDiscoveryAttachment(skills)
-    expect(result[0].content).toContain('skill-a')
-    expect(result[0].content).toContain('Description A')
-    expect(result[0].content).toContain('skill-b')
-    expect(result[0].content).toContain('Description B')
+    expect(result[0]!.content).toContain('skill-a')
+    expect(result[0]!.content).toContain('Description A')
+    expect(result[0]!.content).toContain('skill-b')
+    expect(result[0]!.content).toContain('Description B')
   })
 
   it('message id starts with skill-discovery-', () => {
     const result = buildSkillDiscoveryAttachment([{ name: 's', description: 'd' }])
-    expect(result[0].id).toMatch(/^skill-discovery-/)
+    expect(result[0]!.id).toMatch(/^skill-discovery-/)
   })
 })
 
@@ -121,23 +121,23 @@ describe('buildMcpDeltaAttachment', () => {
   it('includes added servers in message', () => {
     const result = buildMcpDeltaAttachment({ added: ['server-a', 'server-b'] })
     expect(result).toHaveLength(1)
-    expect(result[0].content).toContain('server-a')
-    expect(result[0].content).toContain('server-b')
-    expect(result[0].content).toContain('MCP servers connected')
+    expect(result[0]!.content).toContain('server-a')
+    expect(result[0]!.content).toContain('server-b')
+    expect(result[0]!.content).toContain('MCP servers connected')
   })
 
   it('includes removed servers in message', () => {
     const result = buildMcpDeltaAttachment({ removed: ['server-x'] })
     expect(result).toHaveLength(1)
-    expect(result[0].content).toContain('server-x')
-    expect(result[0].content).toContain('MCP servers disconnected')
+    expect(result[0]!.content).toContain('server-x')
+    expect(result[0]!.content).toContain('MCP servers disconnected')
   })
 
   it('returns message with correct metadata', () => {
     const result = buildMcpDeltaAttachment({ added: ['svc'] })
-    expect(result[0].role).toBe('user')
-    expect(result[0].isMeta).toBe(true)
-    expect(result[0].id).toMatch(/^mcp-delta-/)
+    expect(result[0]!.role).toBe('user')
+    expect(result[0]!.isMeta).toBe(true)
+    expect(result[0]!.id).toMatch(/^mcp-delta-/)
   })
 })
 
@@ -153,7 +153,7 @@ describe('buildAttachmentsForTurn', () => {
     const attachments = [{ type: 'skill_discovery' as const, skills: [{ name: 's', description: 'd' }] }]
     const result = buildAttachmentsForTurn(attachments)
     expect(result.length).toBeGreaterThan(0)
-    expect(result[0].role).toBe('user')
+    expect(result[0]!.role).toBe('user')
   })
 
   it('handles mcp_delta attachment type with added servers', () => {
@@ -175,7 +175,7 @@ describe('buildAttachmentsForTurn', () => {
     }]
     const result = buildAttachmentsForTurn(attachments)
     expect(result.length).toBeGreaterThan(0)
-    expect(result[0].content).toContain('Memory content')
+    expect(result[0]!.content).toContain('Memory content')
   })
 
   it('skips relevant_memories with empty memories array', () => {
@@ -196,8 +196,8 @@ describe('buildAttachmentsForTurn', () => {
   it('each result message has correct metadata', () => {
     const attachments = [{ type: 'skill_discovery' as const, skills: [{ name: 's', description: 'd' }] }]
     const result = buildAttachmentsForTurn(attachments)
-    expect(result[0].role).toBe('user')
-    expect(result[0].isMeta).toBe(true)
-    expect(result[0].id).toBeTruthy()
+    expect(result[0]!.role).toBe('user')
+    expect(result[0]!.isMeta).toBe(true)
+    expect(result[0]!.id).toBeTruthy()
   })
 })

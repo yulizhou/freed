@@ -11,9 +11,9 @@ describe('collectEnvContext', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     // Default OS mocks
-    mockOs.default.type.mockReturnValue('Darwin');
-    mockOs.default.release.mockReturnValue('23.5.0');
-    mockOs.default.arch.mockReturnValue('arm64');
+    mockOs.default.type = vi.fn(() => 'Darwin');
+    mockOs.default.release = vi.fn(() => '23.5.0');
+    mockOs.default.arch = vi.fn(() => 'arm64');
     // Default SHELL env
     process.env['SHELL'] = '/bin/zsh';
     delete process.env['BUN_VERSION'];

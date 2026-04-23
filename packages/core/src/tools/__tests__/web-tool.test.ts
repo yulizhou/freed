@@ -7,7 +7,7 @@ describe('webFetchTool', () => {
     expect(webFetchTool.name).toBe('web_fetch');
     expect(webFetchTool.description).toBe('Fetch content from a URL');
     expect(webFetchTool.riskLevel).toBe('ask');
-    expect(webFetchTool.inputSchema.properties.url.type).toBe('string');
+    expect((webFetchTool.inputSchema as { properties: { url?: { type?: string } } }).properties?.url?.type).toBe('string');
     expect(webFetchTool.inputSchema.required).toContain('url');
   });
 

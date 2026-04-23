@@ -98,7 +98,7 @@ describe('StdioMCPServer', () => {
     const server = new StdioMCPServer(makeStdioConfig('stdio-test', '/bin/server'));
     await server.start();
     expect(server.tools).toHaveLength(2);
-    expect(server.tools[0].name).toContain('mcp__stdio-test__tool-a');
+    expect(server.tools[0]!.name).toContain('mcp__stdio-test__tool-a');
   });
 
   it('sets the server name from config', () => {
@@ -119,7 +119,7 @@ describe('StdioMCPServer', () => {
     const server = new StdioMCPServer(makeStdioConfig('stdio-test', '/bin/server'));
     await server.start();
     await server.close();
-    const clientInstance = mocks.Client.mock.results[0].value;
+    const clientInstance = mocks.Client.mock.results[0]!.value;
     expect(clientInstance.close).toHaveBeenCalled();
     expect(transportClose).toHaveBeenCalled();
   });
@@ -171,7 +171,7 @@ describe('HttpMCPServer', () => {
     const server = new HttpMCPServer(makeHttpConfig('http-test', 'http://localhost:8080'));
     await server.start();
     expect(server.tools).toHaveLength(2);
-    expect(server.tools[0].name).toContain('mcp__http-test__get-info');
+    expect(server.tools[0]!.name).toContain('mcp__http-test__get-info');
   });
 
   it('close calls client.close and transport.close', async () => {
@@ -187,7 +187,7 @@ describe('HttpMCPServer', () => {
     const server = new HttpMCPServer(makeHttpConfig('http-test', 'http://localhost:8080'));
     await server.start();
     await server.close();
-    const clientInstance = mocks.Client.mock.results[0].value;
+    const clientInstance = mocks.Client.mock.results[0]!.value;
     expect(clientInstance.close).toHaveBeenCalled();
     expect(transportClose).toHaveBeenCalled();
   });

@@ -115,7 +115,7 @@ describe('checkMCPServers', () => {
     mockCreateMCPServer.mockRejectedValue(new Error('fail'));
 
     const results = await checkMCPServers();
-    expect(results[0].status).toBe('failed');
+    expect(results[0]!.status).toBe('failed');
     // No server handle exists when creation throws, so only verify result
   });
 
@@ -136,8 +136,8 @@ describe('checkMCPServers', () => {
     mockCreateMCPServer.mockRejectedValue('plain string error');
 
     const results: ServerHealthResult[] = await checkMCPServers();
-    expect(results[0].status).toBe('failed');
-    expect(results[0].reason).toBe('plain string error');
+    expect(results[0]!.status).toBe('failed');
+    expect(results[0]!.reason).toBe('plain string error');
   });
 
   it('ServerHealthResult has correct structure', async () => {
@@ -145,7 +145,7 @@ describe('checkMCPServers', () => {
     mockCreateMCPServer.mockResolvedValue(makeHandle('struct', 2));
 
     const results: ServerHealthResult[] = await checkMCPServers();
-    const r = results[0];
+    const r = results[0]!;
     expect(r).toHaveProperty('name');
     expect(r).toHaveProperty('status');
     expect(['connected', 'failed']).toContain(r.status);

@@ -10,7 +10,7 @@ describe('askUserQuestionTool', () => {
 
   it('should have correct input schema', () => {
     expect(askUserQuestionTool.inputSchema.type).toBe('object');
-    expect(askUserQuestionTool.inputSchema.properties.questions).toBeDefined();
+    expect((askUserQuestionTool.inputSchema as { properties: { questions?: unknown } }).properties?.questions).toBeDefined();
   });
 
   it('should return structured output for single question', async () => {

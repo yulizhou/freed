@@ -1,6 +1,29 @@
 import { streamText, tool as aiTool } from 'ai';
 import type { ToolSet } from 'ai';
 import { z } from 'zod';
+import { nanoid } from 'nanoid';
+import { EventEmitter } from 'eventemitter3';
+import type { AgentProfile, Message, Session, EnvContext } from '../shared/index.js';
+import { FreedError, ErrorCode } from '../shared/index.js';
+import { ModelRouter } from '../models/index.js';
+import { ToolRegistry, classifyShellRisk } from '../tools/index.js';
+import { MemoryManager } from '../storage/index.js';
+import { ApprovalEngine } from './approval-engine.js';
+import { skillRegistry } from './skill-registry.js';
+import { SessionCompactor } from './session-compactor.js';
+import { classifyError, backoffDelay } from './error-classifier.js';
+import type { CompactionOptions } from './session-compactor.js';
+import type { Skill } from '../skills/index.js';
+import {
+  getDefaultSystemPrompt,
+  buildEffectiveSystemPrompt,
+  getUserContext,
+  getSystemContext,
+} from '../prompt/index.js';
+
+const DEFAULT_TOOL_TIMEOUT = 30_000;
+const SHELL_TOOL_TIMEOUT = 120_000;
+const DEFAULT_MAX_RETRIES = 2;
 
 /** Convert a basic JSON Schema input definition to a Zod schema for AI SDK tool validation. */
 function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodType<unknown> {
@@ -26,22 +49,6 @@ function jsonSchemaToZod(schema: Record<string, unknown>): z.ZodType<unknown> {
   }
   return z.object(shape);
 }
-import { nanoid } from 'nanoid';
-import { EventEmitter } from 'eventemitter3';
-import type { AgentProfile, Message, Session, EnvContext } from '../shared/index.js';
-import { FreedError, ErrorCode } from '../shared/index.js';
-import { ModelRouter } from '../models/index.js';
-import { ToolRegistry, classifyShellRisk } from '../tools/index.js';
-import { MemoryManager } from '../storage/index.js';
-import { ApprovalEngine } from './approval-engine.js';
-import { skillRegistry } from './skill-registry.js';
-import type { Skill } from '../skills/index.js';
-import {
-  getDefaultSystemPrompt,
-  buildEffectiveSystemPrompt,
-  getUserContext,
-  getSystemContext,
-} from '../prompt/index.js';
 
 export interface AgentRuntimeOptions {
   modelRouter?: ModelRouter;
@@ -49,6 +56,8 @@ export interface AgentRuntimeOptions {
   memoryManager?: MemoryManager;
   approvalEngine: ApprovalEngine;
   maxSteps?: number;
+  compaction?: CompactionOptions;
+  signal?: AbortSignal;
 }
 
 export interface StreamChunk {
@@ -68,9 +77,18 @@ export type StreamHandler = (chunk: StreamChunk) => void;
 /**
  * Core agent execution loop.
  * Drives a ReAct-style: model → tool call → approval → execute → repeat.
+ *
+ * Features:
+ * - Session compaction before each run to stay within context budget
+ * - Error classification and retry for tool execution
+ * - AbortController support for cancellation
+ * - Exponential backoff on transient/tool timeout errors
  */
 export class AgentRuntime extends EventEmitter {
-  private readonly opts: Required<AgentRuntimeOptions> & { maxSteps: number };
+  private readonly opts: Required<AgentRuntimeOptions> & {
+    maxSteps: number;
+    compactor: SessionCompactor;
+  };
 
   constructor(opts: AgentRuntimeOptions) {
     super();
@@ -80,6 +98,9 @@ export class AgentRuntime extends EventEmitter {
       memoryManager: opts.memoryManager ?? new MemoryManager(),
       approvalEngine: opts.approvalEngine,
       maxSteps: opts.maxSteps ?? 20,
+      compaction: opts.compaction ?? {},
+      signal: opts.signal as AbortSignal,
+      compactor: new SessionCompactor(opts.compaction),
     };
   }
 
@@ -90,25 +111,34 @@ export class AgentRuntime extends EventEmitter {
     envContext: EnvContext,
     onChunk: StreamHandler,
   ): Promise<Message[]> {
+    // Check abort signal before starting
+    if (this.opts.signal?.aborted) {
+      onChunk({ type: 'error', error: 'Run aborted before start.' });
+      return [];
+    }
+
+    // Compact session before run to stay within context budget
+    const compacted = this.opts.compactor.compact(session);
+
     const model = this.opts.modelRouter.resolve(agentProfile.model);
 
     // Get user context for meta user message (prependUserContext pattern)
-    const projectName = envContext.cwd.split('/').pop()
+    const projectName = envContext.cwd.split('/').pop();
     const userContextArgs: { projectName?: string; sessionStartDate: Date } = {
       sessionStartDate: new Date(),
-    }
+    };
     if (projectName !== undefined) {
-      userContextArgs.projectName = projectName
+      userContextArgs.projectName = projectName;
     }
     const userContext = await getUserContext(userContextArgs);
 
     // Get system context for appending to system prompt (appendSystemContext pattern)
-    const systemContextArgs: { gitBranch?: string; gitStatus?: string } = {}
+    const systemContextArgs: { gitBranch?: string; gitStatus?: string } = {};
     if (envContext.gitBranch !== undefined) {
-      systemContextArgs.gitBranch = envContext.gitBranch
+      systemContextArgs.gitBranch = envContext.gitBranch;
     }
     if (envContext.gitChangedFiles?.length) {
-      systemContextArgs.gitStatus = `Changed: ${envContext.gitChangedFiles.join(', ')}`
+      systemContextArgs.gitStatus = `Changed: ${envContext.gitChangedFiles.join(', ')}`;
     }
     const systemContext = getSystemContext(systemContextArgs);
 
@@ -146,7 +176,6 @@ export class AgentRuntime extends EventEmitter {
       defaultSystemPrompt,
     });
 
-    // Apply priority-based effective prompt logic (already string[])
     // Append system context to the system prompt
     const systemContextLines = Object.entries(systemContext)
       .map(([k, v]) => `  ${k}: ${v}`)
@@ -157,7 +186,7 @@ export class AgentRuntime extends EventEmitter {
     const systemPrompt = effectivePrompt.join('\n') + systemPromptSuffix;
 
     // Convert session messages to AI SDK format
-    const history = session.messages
+    const history = compacted.messages
       .filter((m) => m.role === 'user' || m.role === 'assistant')
       .map((m) => ({ role: m.role as 'user' | 'assistant', content: m.content }));
 
@@ -166,6 +195,10 @@ export class AgentRuntime extends EventEmitter {
 
     for (const toolDef of agentTools) {
       const toolDef_ = toolDef;
+      const toolTimeout = toolDef_.maxDuration ??
+        (toolDef_.name === 'shell' ? SHELL_TOOL_TIMEOUT : DEFAULT_TOOL_TIMEOUT);
+      const maxRetries = toolDef_.maxRetries ?? DEFAULT_MAX_RETRIES;
+
       aiTools[toolDef_.name] = aiTool({
         description: toolDef_.description,
         parameters: jsonSchemaToZod(toolDef_.inputSchema as Record<string, unknown>),
@@ -180,7 +213,6 @@ export class AgentRuntime extends EventEmitter {
           }
 
           onChunk({ type: 'tool_call', toolName: toolDef_.name, toolInput: input });
-
           onChunk({ type: 'spinner_start', label: 'Running tool...' });
 
           const approved = await this.opts.approvalEngine.check(toolCall, riskLevel);
@@ -191,14 +223,47 @@ export class AgentRuntime extends EventEmitter {
 
           onChunk({ type: 'approval_request' });
 
-          const result = await toolDef_.execute(input);
-          const output = result.success ? result.output : `Error: ${result.error ?? 'unknown'}`;
-          onChunk({ type: 'tool_result', toolName: toolDef_.name, toolResult: output });
-          onChunk({ type: 'spinner_stop', label: 'Running tool...', success: result.success });
+          // Execute with retry for transient errors
+          let lastError: unknown;
+          for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            try {
+              // Run tool with timeout via Promise.race
+              const result = await Promise.race([
+                toolDef_.execute(input),
+                new Promise<never>((_, reject) =>
+                  setTimeout(() => reject(new Error(`Tool ${toolDef_.name} timed out after ${toolTimeout}ms`)), toolTimeout),
+                ),
+              ]);
 
-          this.emit('tool:executed', { toolName: toolDef_.name, success: result.success, riskLevel });
+              const output = result.success ? result.output : `Error: ${result.error ?? 'unknown'}`;
+              onChunk({ type: 'tool_result', toolName: toolDef_.name, toolResult: output });
+              onChunk({ type: 'spinner_stop', label: 'Running tool...', success: result.success });
 
-          return output;
+              this.emit('tool:executed', { toolName: toolDef_.name, success: result.success, riskLevel });
+              return output;
+            } catch (err) {
+              lastError = err;
+              const category = classifyError(err);
+
+              // Only retry on transient or timeout errors
+              if (category === 'permanent' || attempt >= maxRetries) {
+                break;
+              }
+
+              // Exponential backoff before retry
+              const delay = backoffDelay(attempt);
+              onChunk({ type: 'spinner_start', label: `Retrying ${toolDef_.name} (attempt ${attempt + 1}/${maxRetries})...` });
+              await new Promise((resolve) => setTimeout(resolve, delay));
+            }
+          }
+
+          // All retries exhausted or permanent error
+          const errorMsg = lastError instanceof Error ? lastError.message : String(lastError);
+          onChunk({ type: 'tool_result', toolName: toolDef_.name, toolResult: `Error: ${errorMsg}` });
+          onChunk({ type: 'spinner_stop', label: 'Running tool...', success: false });
+
+          this.emit('tool:executed', { toolName: toolDef_.name, success: false, riskLevel });
+          return `Tool execution failed: ${errorMsg}`;
         },
       });
     }
@@ -224,11 +289,17 @@ export class AgentRuntime extends EventEmitter {
         ],
         ...(Object.keys(aiTools).length > 0 ? { tools: aiTools } : {}),
         maxSteps: this.opts.maxSteps,
+        ...(this.opts.signal ? { abortSignal: this.opts.signal } : {}),
       });
 
       let fullText = '';
       let firstChunk = true;
       for await (const chunk of textStream) {
+        // Check abort between chunks
+        if (this.opts.signal?.aborted) {
+          onChunk({ type: 'error', error: 'Run aborted.' });
+          break;
+        }
         fullText += chunk;
         onChunk({ type: 'text', content: chunk });
         if (firstChunk) {
@@ -237,10 +308,12 @@ export class AgentRuntime extends EventEmitter {
         }
       }
 
-      // Ensure we get the full resolved text
-      const resolvedText = await text;
-      if (resolvedText && resolvedText !== fullText) {
-        fullText = resolvedText;
+      // Ensure we get the full resolved text (only if not aborted)
+      if (!this.opts.signal?.aborted) {
+        const resolvedText = await text;
+        if (resolvedText && resolvedText !== fullText) {
+          fullText = resolvedText;
+        }
       }
 
       const assistantMsg: Message = {

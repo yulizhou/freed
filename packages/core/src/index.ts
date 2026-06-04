@@ -8,6 +8,7 @@ export type {
   MessageRole,
   Message,
   Session,
+  SessionSummary,
   AgentProfile,
   MemoryScope,
   MemoryEntry,
@@ -17,7 +18,7 @@ export type {
   EnvContext,
   SlashCommand,
 } from './shared/index.js';
-export { RiskLevelSchema, ToolInputSchema, ToolResultSchema, ToolDescriptorSchema, ToolCallSchema, MessageRoleSchema, MessageSchema, SessionSchema, AgentProfileSchema, MemoryScopeSchema, MemoryEntrySchema, TaskEventSchema, FreedConfigSchema, EnvContextSchema, SlashCommandSchema, FreedError } from './shared/index.js';
+export { RiskLevelSchema, ToolInputSchema, ToolResultSchema, ToolDescriptorSchema, ToolCallSchema, MessageRoleSchema, MessageSchema, SessionSchema, SessionSummarySchema, AgentProfileSchema, MemoryScopeSchema, MemoryEntrySchema, TaskEventSchema, FreedConfigSchema, EnvContextSchema, SlashCommandSchema, FreedError } from './shared/index.js';
 
 // Re-exports from models
 export { ModelRouter } from './models/model-router.js';
@@ -26,6 +27,7 @@ export type { ModelRouterOptions } from './models/model-router.js';
 // Re-exports from tools
 export { ToolRegistry } from './tools/tool-registry.js';
 export type { ToolDefinition, AnyToolDefinition } from './tools/types.js';
+export { DEFAULT_TIMEOUTS } from './tools/types.js';
 export { readFileTool, writeFileTool, listDirTool } from './tools/file-tools.js';
 export { shellTool, classifyShellRisk } from './tools/shell-tool.js';
 export { gitStatusTool, gitDiffTool, gitLogTool } from './tools/git-tools.js';
@@ -34,7 +36,7 @@ export { MCPGateway } from './tools/mcp-gateway.js';
 export { BUILT_IN_TOOLS, toolRegistry, mcpGateway } from './tools/index.js';
 
 // Re-exports from storage
-export { MemoryManager } from './storage/index.js';
+export { MemoryManager, SessionStore } from './storage/index.js';
 export type { MemoryManagerOptions, MemoryFile } from './storage/index.js';
 export { AgentsLoader } from './storage/index.js';
 
@@ -57,3 +59,10 @@ export { createSession, appendMessages, trimSession } from './runtime/session.js
 export { SlashCommandRegistry, createBuiltinCommands } from './runtime/slash-commands.js';
 export type { SlashCommandHandler, SlashCommandContext } from './runtime/slash-commands.js';
 export { skillRegistry } from './runtime/skill-registry.js';
+
+// Re-exports from new runtime modules
+export { SessionCompactor } from './runtime/session-compactor.js';
+export type { CompactionOptions } from './runtime/session-compactor.js';
+export { estimateTokens, estimateMessageTokens } from './runtime/token-counter.js';
+export { classifyError, shouldRetry, backoffDelay, withRetry } from './runtime/error-classifier.js';
+export type { ErrorCategory } from './runtime/error-classifier.js';

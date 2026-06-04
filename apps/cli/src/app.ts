@@ -13,6 +13,7 @@ import {
   createSession,
   appendMessages,
   createBuiltinCommands,
+  SessionStore,
 } from '@freed/core';
 import type { StreamChunk } from '@freed/core';
 import { askConfirmation } from './prompt.js';
@@ -152,6 +153,9 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
     approvalEngine,
   });
 
+  // Session persistence
+  const sessionStore = new SessionStore();
+
   let envContext = await collectEnvContext(projectRoot);
   let session = createSession(currentAgent);
 
@@ -161,7 +165,8 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
       session = createSession(currentAgent);
       console.log(formatSuccess('Session cleared.'));
     },
-    () => {
+    async () => {
+      await sessionStore.save(session).catch(() => {});
       console.log(formatSuccess('Goodbye!\n'));
       mcpGateway?.close();
       process.exit(0);
@@ -183,6 +188,40 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
     },
   );
 
+
+  // Register session persistence commands
+  slashCommands.register("save", "Save current session to disk", async () => {
+    await sessionStore.save(session).catch(() => {});
+    return "Session " + session.id.slice(0, 8) + "... saved.";
+  });
+
+  slashCommands.register("load", "Load a saved session by ID (usage: /load sessionId)", async (args) => {
+    const sid = args[0];
+    if (!sid) return "Usage: /load sessionId";
+    const loaded = await sessionStore.load(sid);
+    if (!loaded) return "Session \"" + sid + "\" not found.";
+    session = loaded;
+    currentAgentId = loaded.agentId;
+    const found = agentProfiles.find(function(a) { return a.id === loaded.agentId; });
+    if (found) currentAgent = found;
+    return "Loaded session " + sid.slice(0, 8) + "... (" + loaded.messages.length + " messages, agent: " + loaded.agentId + ")";
+  });
+
+  slashCommands.register("sessions", "List saved sessions", async () => {
+    const summaries = await sessionStore.list();
+    if (summaries.length === 0) return "No saved sessions.";
+    return summaries.map(function(s) {
+      var preview = s.preview ? " | " + (s.preview.length > 50 ? s.preview.slice(0, 50) + "..." : s.preview) : "";
+      return "  " + s.sessionId.slice(0, 12) + "... | " + s.agentId + " | " + s.messageCount + " msgs | " + new Date(s.updatedAt).toISOString().slice(0, 19) + preview;
+    }).join("\n");
+  });
+
+  slashCommands.register("delete-session", "Delete a saved session (usage: /delete-session sessionId)", async (args) => {
+    var sid = args[0];
+    if (!sid) return "Usage: /delete-session sessionId";
+    await sessionStore.delete(sid);
+    return "Session " + sid.slice(0, 8) + "... deleted.";
+  });
   // Register /help
   slashCommands.register('help', 'Show available commands', async () => {
     const cmds = slashCommands.list();
@@ -315,8 +354,9 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
       showPrompt();
     });
 
-  rl.on('SIGINT', () => {
+  rl.on('SIGINT', async () => {
     console.log(chalk.dim('\n\nGoodbye!\n'));
+    await sessionStore.save(session).catch(() => {});
     process.exit(0);
   });
 
@@ -335,6 +375,7 @@ export async function runApp(opts: AppOptions = {}): Promise<void> {
     const input = await askLineMulti();
 
     if (input === null) {
+      await sessionStore.save(session).catch(() => {});
       break; // EOF / Ctrl+D
     }
 

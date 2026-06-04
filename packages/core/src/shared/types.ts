@@ -59,6 +59,19 @@ export const SessionSchema = z.object({
 });
 export type Session = z.infer<typeof SessionSchema>;
 
+// ─── Session Summary (for session listing) ────────────────────────────────────
+
+export const SessionSummarySchema = z.object({
+  id: z.string(),
+  sessionId: z.string(),
+  agentId: z.string(),
+  messageCount: z.number(),
+  createdAt: z.date(),
+  updatedAt: z.date(),
+  preview: z.string().optional(),
+});
+export type SessionSummary = z.infer<typeof SessionSummarySchema>;
+
 // ─── Agent Profile ────────────────────────────────────────────────────────────
 
 export const AgentProfileSchema = z.object({
